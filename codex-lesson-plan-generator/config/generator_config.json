@@ -1,0 +1,30 @@
+{
+  "lesson_duration_minutes": 55,
+  "date_override": "",
+  "input": {
+    "slides_dir": "../lesson-plan-engine/INBOX",
+    "agenda_dir": "../lesson-plan-engine/INBOX/agenda",
+    "notes_dir": "../lesson-plan-engine/INBOX/notes"
+  },
+  "extracted": {
+    "raw_slide_text": "../lesson-plan-engine/OUTPUT/extracted/raw_slide_text.json",
+    "normalized_lesson": "../lesson-plan-engine/OUTPUT/extracted/normalized_lesson.json",
+    "source_fidelity_map": "../lesson-plan-engine/OUTPUT/extracted/source_fidelity_map.json"
+  },
+  "output": {
+    "json": "../lesson-plan-engine/OUTPUT/lesson_plan.json",
+    "markdown": "../lesson-plan-engine/OUTPUT/lesson_plan.md",
+    "docx": "../lesson-plan-engine/OUTPUT/lesson_plan.docx",
+    "validation_report": "../lesson-plan-engine/OUTPUT/validation_report.md"
+  },
+  "templates": {
+    "markdown": "templates/lesson_plan_template.md",
+    "docx": "templates/lesson_plan_template.docx"
+  },
+  "active_student_supports": [
+    "Profile A",
+    "Profile G"
+  ],
+  "enable_esol_supports": true,
+  "esol_support_limit": 3
+}

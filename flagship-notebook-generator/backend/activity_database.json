@@ -1,0 +1,436 @@
+{
+  "activities": [
+    {
+      "name": "movable sticky-note responses",
+      "family": "reveal_discuss",
+      "preferred_kinds": ["be_curious", "reflection"],
+      "instructions": "Drag each sticky note into the Notice, Wonder, or Predict space, then explain one choice in a complete sentence.",
+      "answer_check": "Each sticky note should connect to a real detail from the source image, figure, or prompt.",
+      "piece_limit": 4,
+      "piece_labels": ["I notice...", "I wonder...", "I predict...", "This word matters..."]
+    },
+    {
+      "name": "gallery walk sticky-note sort",
+      "family": "reveal_discuss",
+      "preferred_kinds": ["be_curious", "reflection"],
+      "instructions": "Move the sticky notes into the box that best matches your thinking, then add one sentence that uses a clue from the source slide.",
+      "answer_check": "Each sticky note should match the source image, figure, or problem setup and be supported by a visible detail.",
+      "piece_limit": 4,
+      "piece_labels": ["Notice", "Wonder", "Predict", "Important word"]
+    },
+    {
+      "name": "cover-and-reveal",
+      "family": "reveal_discuss",
+      "preferred_kinds": ["be_curious", "quick_review"],
+      "instructions": "Move one cover at a time, pause after each reveal, and revise your thinking with a partner.",
+      "answer_check": "Use a clue from the source slide after each reveal to justify your updated idea.",
+      "piece_limit": 4,
+      "piece_labels": ["Clue 1", "Clue 2", "Clue 3", "Final reveal"]
+    },
+    {
+      "name": "estimate-then-reveal prediction",
+      "family": "reveal_discuss",
+      "preferred_kinds": ["be_curious", "quick_review"],
+      "instructions": "Make an estimate first, then move the reveal cards to compare your prediction to the source information.",
+      "answer_check": "Your final statement should name one clue that made your estimate more accurate.",
+      "piece_limit": 4,
+      "piece_labels": ["Estimate", "Clue", "Revise", "Reveal"]
+    },
+    {
+      "name": "card flip reveal discussion",
+      "family": "reveal_discuss",
+      "preferred_kinds": ["be_curious", "quick_review"],
+      "instructions": "Flip or move one card at a time to reveal new information and discuss what changes in your reasoning.",
+      "answer_check": "Each new card should make your explanation more specific and better supported.",
+      "piece_limit": 4,
+      "piece_labels": ["Card 1", "Card 2", "Card 3", "Explain"]
+    },
+    {
+      "name": "movable discussion marker selection",
+      "family": "compare_rank",
+      "preferred_kinds": ["learning_target"],
+      "instructions": "Place a marker next to the goal or strategy that feels strongest before the lesson and again after the lesson.",
+      "answer_check": "Your after marker should match the notes, speaking, or practice evidence you can point to.",
+      "piece_limit": 4,
+      "piece_labels": ["Before", "After", "Evidence", "Next step"]
+    },
+    {
+      "name": "strategy ranking activity",
+      "family": "compare_rank",
+      "preferred_kinds": ["learning_target", "challenge"],
+      "instructions": "Rank the strategies from most helpful to least helpful for this lesson problem, then defend one ranking choice.",
+      "answer_check": "Your ranking should match the structure of the source problem and the worked example.",
+      "piece_limit": 4,
+      "piece_labels": ["Most helpful", "Helpful", "Maybe", "Least helpful"]
+    },
+    {
+      "name": "visual vocabulary matching",
+      "family": "match_pair",
+      "preferred_kinds": ["vocabulary", "be_curious"],
+      "instructions": "Match each lesson word to the visual cue, diagram, or representation that helps explain it.",
+      "answer_check": "Each match should connect the word to something visible in the source slides.",
+      "piece_limit": 4,
+      "piece_labels": ["Word", "Visual", "Definition", "Example"]
+    },
+    {
+      "name": "definition matching",
+      "family": "match_pair",
+      "preferred_kinds": ["vocabulary"],
+      "instructions": "Pair each lesson word with the student-friendly definition that fits it best.",
+      "answer_check": "Read each pair aloud to be sure the definition sounds right in a full sentence.",
+      "piece_limit": 4,
+      "piece_labels": ["Word card", "Definition card", "Example card", "Check"]
+    },
+    {
+      "name": "math vocabulary categorization",
+      "family": "sort_classify",
+      "preferred_kinds": ["vocabulary"],
+      "instructions": "Sort the lesson words into categories such as shape words, operation words, and explanation words.",
+      "answer_check": "Your categories should help you talk and write more precisely about the source problem.",
+      "piece_limit": 4,
+      "piece_labels": ["Shape words", "Action words", "Reasoning words", "My word"]
+    },
+    {
+      "name": "algebra vocabulary placement",
+      "family": "plot_place",
+      "preferred_kinds": ["vocabulary"],
+      "instructions": "Place each word next to the part of the model, diagram, or representation where it belongs.",
+      "answer_check": "Every placement should make the labeled diagram easier to read and explain.",
+      "piece_limit": 4,
+      "piece_labels": ["Label", "Definition", "Example", "Visual cue"]
+    },
+    {
+      "name": "concept map building",
+      "family": "build_construct",
+      "preferred_kinds": ["guided_notes"],
+      "instructions": "Use the cards to build a concept map that shows how the lesson ideas connect.",
+      "answer_check": "The connections should follow the order and meaning of the source slides.",
+      "piece_limit": 4,
+      "piece_labels": ["Main idea", "Detail", "Connection", "Example"]
+    },
+    {
+      "name": "flowchart completion",
+      "family": "build_construct",
+      "preferred_kinds": ["guided_notes"],
+      "instructions": "Place the steps into the flowchart so the process matches the lesson sequence.",
+      "answer_check": "Each step should lead naturally to the next without skipping the source reasoning.",
+      "piece_limit": 4,
+      "piece_labels": ["Start", "Next", "Then", "Result"]
+    },
+    {
+      "name": "label-the-diagram placement",
+      "family": "plot_place",
+      "preferred_kinds": ["guided_notes", "worked_example"],
+      "instructions": "Drag each label to the correct part of the figure, then explain why the label belongs there.",
+      "answer_check": "Check that every label matches the source figure and lesson wording.",
+      "piece_limit": 4,
+      "piece_labels": ["Side", "Height", "Base", "Center"]
+    },
+    {
+      "name": "model annotation placement",
+      "family": "plot_place",
+      "preferred_kinds": ["guided_notes", "worked_example"],
+      "instructions": "Place each annotation where it belongs on the model, then explain how the annotation helps you solve or understand the source problem.",
+      "answer_check": "Every annotation should make the source model clearer and should match the exact figure, labels, or quantities from the slides.",
+      "piece_limit": 4,
+      "piece_labels": ["Label it", "Explain it", "Measure", "Reason"]
+    },
+    {
+      "name": "build-a-model representation",
+      "family": "build_construct",
+      "preferred_kinds": ["guided_notes", "practice"],
+      "instructions": "Use the movable pieces to build the model or representation shown in the source lesson.",
+      "answer_check": "Compare your built model to the source example and fix any missing or misplaced pieces.",
+      "piece_limit": 4,
+      "piece_labels": ["Shape", "Label", "Step", "Reason"]
+    },
+    {
+      "name": "step sequencing",
+      "family": "sequence_order",
+      "preferred_kinds": ["worked_example"],
+      "instructions": "Move the cards into the correct order so the worked example follows the lesson exactly.",
+      "answer_check": "Each step should be necessary and should connect clearly to the next step.",
+      "piece_limit": 4,
+      "piece_labels": ["First", "Next", "Then", "Answer"]
+    },
+    {
+      "name": "reasoning ladder build",
+      "family": "sequence_order",
+      "preferred_kinds": ["worked_example", "reflection"],
+      "instructions": "Build the ladder from starting idea to final explanation so your reasoning is complete and easy to follow.",
+      "answer_check": "Each rung should show a clear move in the thinking and should connect logically to the next rung.",
+      "piece_limit": 4,
+      "piece_labels": ["Start", "Evidence", "Reason", "Conclusion"]
+    },
+    {
+      "name": "equation builder",
+      "family": "build_construct",
+      "preferred_kinds": ["worked_example", "practice"],
+      "instructions": "Build the equation or expression from the lesson using the movable cards, then explain what each part represents.",
+      "answer_check": "Each piece should match the quantities and labels in the source problem.",
+      "piece_limit": 4,
+      "piece_labels": ["Number", "Operation", "Label", "Result"]
+    },
+    {
+      "name": "step-by-step solution reconstruction",
+      "family": "sequence_order",
+      "preferred_kinds": ["worked_example"],
+      "instructions": "Reconstruct the full solution path in order, using the source language from the worked example.",
+      "answer_check": "Your reconstructed path should match the original strategy and final result.",
+      "piece_limit": 4,
+      "piece_labels": ["Setup", "Compute", "Check", "Conclude"]
+    },
+    {
+      "name": "missing-step detective",
+      "family": "detect_justify",
+      "preferred_kinds": ["worked_example", "exit_ticket"],
+      "instructions": "Find the missing step or missing reason, then add it back using evidence from the source example.",
+      "answer_check": "The missing step should make the worked example complete and logical again.",
+      "piece_limit": 4,
+      "piece_labels": ["Missing step", "Evidence", "Fix", "Explain"]
+    },
+    {
+      "name": "error analysis repair cards",
+      "family": "detect_justify",
+      "preferred_kinds": ["worked_example", "exit_ticket"],
+      "instructions": "Match the error to the repair card, then explain how the corrected reasoning fits the source model or problem.",
+      "answer_check": "The repair should fix the exact error and should produce a solution path that matches the source lesson.",
+      "piece_limit": 4,
+      "piece_labels": ["Error", "Repair", "Evidence", "Explain"]
+    },
+    {
+      "name": "drag-and-sort categorization",
+      "family": "sort_classify",
+      "preferred_kinds": ["practice"],
+      "instructions": "Sort the problem cards into categories such as known information, strategy, and solution idea.",
+      "answer_check": "Every card should fit the category rule and help you solve the source problem.",
+      "piece_limit": 4,
+      "piece_labels": ["Known", "Need to find", "Strategy", "Check"]
+    },
+    {
+      "name": "strategy sort mat",
+      "family": "sort_classify",
+      "preferred_kinds": ["practice"],
+      "instructions": "Sort the cards by which strategy or move they support, then use one sorted set to explain your plan for the source problem.",
+      "answer_check": "Each card should belong with the strategy it truly supports, and your explanation should match the source task.",
+      "piece_limit": 4,
+      "piece_labels": ["Use first", "Use next", "Helpful evidence", "Not needed"]
+    },
+    {
+      "name": "matching pairs",
+      "family": "match_pair",
+      "preferred_kinds": ["practice"],
+      "instructions": "Match each problem card to the representation, step, or explanation that fits it best.",
+      "answer_check": "Each pair should show the same math idea in two connected forms.",
+      "piece_limit": 4,
+      "piece_labels": ["Problem", "Match", "Evidence", "Explain"]
+    },
+    {
+      "name": "claim-evidence match",
+      "family": "match_pair",
+      "preferred_kinds": ["practice", "challenge"],
+      "instructions": "Match each claim or answer choice to the evidence that proves it, then explain why the pair belongs together.",
+      "answer_check": "Every claim should be backed by a specific detail from the source problem, model, or representation.",
+      "piece_limit": 4,
+      "piece_labels": ["Claim", "Evidence", "Reason", "Check"]
+    },
+    {
+      "name": "table-to-equation matching",
+      "family": "match_pair",
+      "preferred_kinds": ["practice"],
+      "instructions": "Match each table, figure, or value set to the equation or statement that represents it.",
+      "answer_check": "Check that the relationship stays true across all matched parts.",
+      "piece_limit": 4,
+      "piece_labels": ["Table", "Equation", "Reason", "Check"]
+    },
+    {
+      "name": "representation matching (table/graph/equation)",
+      "family": "match_pair",
+      "preferred_kinds": ["practice", "quick_review"],
+      "instructions": "Connect the matching representations and explain how each one shows the same idea.",
+      "answer_check": "The matched set should agree on the quantities, labels, and final interpretation.",
+      "piece_limit": 4,
+      "piece_labels": ["Representation A", "Representation B", "Representation C", "Explanation"]
+    },
+    {
+      "name": "build-the-table activity",
+      "family": "build_construct",
+      "preferred_kinds": ["practice"],
+      "instructions": "Build the missing table or organizer from the source information before solving.",
+      "answer_check": "Every entry should match the source labels, values, and relationships.",
+      "piece_limit": 4,
+      "piece_labels": ["Heading", "Value", "Unit", "Rule"]
+    },
+    {
+      "name": "true/false sorting",
+      "family": "sort_classify",
+      "preferred_kinds": ["quick_review"],
+      "instructions": "Sort each statement into true or false, then fix one false statement in your own words.",
+      "answer_check": "Use the lesson notes or source example to justify each sort.",
+      "piece_limit": 4,
+      "piece_labels": ["True", "False", "Fix it", "Evidence"]
+    },
+    {
+      "name": "four-corner claim sort",
+      "family": "compare_rank",
+      "preferred_kinds": ["quick_review"],
+      "instructions": "Place each claim in the corner that best matches your confidence, then defend one placement with evidence from the lesson.",
+      "answer_check": "Your placement should match what the source notes, model, or practice actually show.",
+      "piece_limit": 4,
+      "piece_labels": ["Strongly true", "Maybe true", "Need evidence", "Not true"]
+    },
+    {
+      "name": "peer answer check placement",
+      "family": "detect_justify",
+      "preferred_kinds": ["learning_target", "quick_review"],
+      "instructions": "Place the check markers next to the work or objective that has clear evidence, then explain your choice.",
+      "answer_check": "A check should only go where you can point to notes, speaking, or written work as proof.",
+      "piece_limit": 4,
+      "piece_labels": ["Check", "Check", "Check", "Check"]
+    },
+    {
+      "name": "multi-step problem path selection",
+      "family": "sequence_order",
+      "preferred_kinds": ["challenge"],
+      "instructions": "Choose and order the best path through the multi-step problem, then justify why that path is efficient.",
+      "answer_check": "Your path should use all necessary information from the source challenge and no unnecessary steps.",
+      "piece_limit": 4,
+      "piece_labels": ["Start", "Strategy", "Compute", "Justify"]
+    },
+    {
+      "name": "claim-evidence sort mat",
+      "family": "detect_justify",
+      "preferred_kinds": ["challenge"],
+      "instructions": "Sort each claim under the evidence that proves or weakens it, then write a final defense for your best-supported choice.",
+      "answer_check": "The strongest claim should be supported by evidence that clearly comes from the source challenge and not from guessing.",
+      "piece_limit": 4,
+      "piece_labels": ["Best claim", "Evidence", "Weak evidence", "Defense"]
+    },
+    {
+      "name": "drag-to-justify reasoning",
+      "family": "detect_justify",
+      "preferred_kinds": ["challenge", "practice"],
+      "instructions": "Move each evidence card next to the claim or solution choice it supports, then write one justification sentence.",
+      "answer_check": "Every claim should be backed by a specific detail from the source problem or model.",
+      "piece_limit": 4,
+      "piece_labels": ["Claim", "Evidence", "Reason", "Check"]
+    },
+    {
+      "name": "build-the-argument reasoning cards",
+      "family": "build_construct",
+      "preferred_kinds": ["challenge", "reflection"],
+      "instructions": "Arrange the cards to build a complete argument with a claim, evidence, and reasoning.",
+      "answer_check": "Your argument should clearly connect the evidence to the final claim.",
+      "piece_limit": 4,
+      "piece_labels": ["Claim", "Evidence", "Reasoning", "Conclusion"]
+    },
+    {
+      "name": "reflection evidence sort",
+      "family": "compare_rank",
+      "preferred_kinds": ["reflection"],
+      "instructions": "Sort the evidence cards by what helped you most, then use the strongest evidence to explain what you learned.",
+      "answer_check": "Your strongest evidence should connect directly to the lesson model, practice, or discussion.",
+      "piece_limit": 4,
+      "piece_labels": ["Helped a lot", "Helped some", "Need more practice", "Next step"]
+    },
+    {
+      "name": "mathematical debate claim placement",
+      "family": "compare_rank",
+      "preferred_kinds": ["challenge"],
+      "instructions": "Place the claim cards under the choice you support most strongly, then defend your position with evidence.",
+      "answer_check": "The strongest claim should match the actual structure and quantities in the source task.",
+      "piece_limit": 4,
+      "piece_labels": ["Strongest claim", "Maybe", "Needs evidence", "Reject"]
+    },
+    {
+      "name": "sentence builder",
+      "family": "build_construct",
+      "preferred_kinds": ["reflection"],
+      "instructions": "Build a complete reflection sentence using the lesson vocabulary and evidence cards.",
+      "answer_check": "Your final sentence should include both what you learned and why it makes sense.",
+      "piece_limit": 4,
+      "piece_labels": ["I learned", "because", "evidence", "therefore"]
+    },
+    {
+      "name": "build-a-math-explanation sentence strips",
+      "family": "build_construct",
+      "preferred_kinds": ["reflection", "exit_ticket"],
+      "instructions": "Arrange the sentence strips to build a clear math explanation, then read it aloud to check fluency.",
+      "answer_check": "The explanation should sound complete, precise, and tied to the source problem.",
+      "piece_limit": 4,
+      "piece_labels": ["First", "Because", "So", "Answer"]
+    },
+    {
+      "name": "discussion evidence placement",
+      "family": "detect_justify",
+      "preferred_kinds": ["reflection"],
+      "instructions": "Place each evidence card next to the idea it supports, then explain one match with a partner.",
+      "answer_check": "Your evidence should come from the actual notes, model, or solved problem.",
+      "piece_limit": 4,
+      "piece_labels": ["Idea", "Evidence", "Support", "Explain"]
+    },
+    {
+      "name": "reasoning ladder building",
+      "family": "sequence_order",
+      "preferred_kinds": ["reflection"],
+      "instructions": "Build the reasoning ladder from basic idea to full explanation using the lesson vocabulary.",
+      "answer_check": "Each rung should make your explanation more complete and more precise.",
+      "piece_limit": 4,
+      "piece_labels": ["Idea", "Detail", "Evidence", "Conclusion"]
+    },
+    {
+      "name": "check-the-solution placement",
+      "family": "detect_justify",
+      "preferred_kinds": ["exit_ticket"],
+      "instructions": "Place the check cards next to the part of the work that proves the answer is correct.",
+      "answer_check": "Your checks should point to computation, units, labels, or reasoning that verifies the result.",
+      "piece_limit": 4,
+      "piece_labels": ["Compute", "Units", "Reasoning", "Final check"]
+    },
+    {
+      "name": "equation error correction drag",
+      "family": "detect_justify",
+      "preferred_kinds": ["exit_ticket"],
+      "instructions": "Drag the correction card to the step with the mistake, then explain how to fix it.",
+      "answer_check": "The corrected work should now match the source relationship and final answer.",
+      "piece_limit": 4,
+      "piece_labels": ["Error", "Fix", "Why", "Check"]
+    },
+    {
+      "name": "mathematical error explanation placement",
+      "family": "detect_justify",
+      "preferred_kinds": ["exit_ticket", "quick_review"],
+      "instructions": "Place the explanation cards next to the error they describe, then write the corrected reasoning.",
+      "answer_check": "Your explanation should identify both what went wrong and what should happen instead.",
+      "piece_limit": 4,
+      "piece_labels": ["Error", "What went wrong", "Correction", "Evidence"]
+    },
+    {
+      "name": "show-what-you-know self-check",
+      "family": "detect_justify",
+      "preferred_kinds": ["exit_ticket"],
+      "instructions": "Move each check to the part of your work that shows the lesson goal, then add one sentence explaining why your evidence is strong.",
+      "answer_check": "A check should only be placed where the work clearly matches the source strategy, vocabulary, or final reasoning.",
+      "piece_limit": 4,
+      "piece_labels": ["Goal met", "Evidence", "Reason", "Check"]
+    },
+    {
+      "name": "area model construction",
+      "family": "build_construct",
+      "preferred_kinds": ["worked_example", "practice", "challenge"],
+      "instructions": "Use the pieces to build an area model that matches the dimensions and labels from the source figure.",
+      "answer_check": "The finished model should show all needed parts of the area calculation clearly.",
+      "piece_limit": 4,
+      "piece_labels": ["Shape", "Base", "Height", "Area"]
+    },
+    {
+      "name": "geometric figure property sorting",
+      "family": "sort_classify",
+      "preferred_kinds": ["guided_notes", "practice"],
+      "instructions": "Sort the figure cards by their properties, then explain which property matters most for solving the lesson problem.",
+      "answer_check": "Your sort should highlight the properties actually used in the source solution.",
+      "piece_limit": 4,
+      "piece_labels": ["Property", "Figure", "Why it matters", "Check"]
+    }
+  ]
+}

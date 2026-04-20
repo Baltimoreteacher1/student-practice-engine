@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lesson Plan QA Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "passed",
+    "checks",
+    "warnings",
+    "missing_sections",
+    "timing",
+    "standards_source_validation",
+    "output_file_status"
+  ],
+  "properties": {
+    "passed": {
+      "type": "boolean"
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "passed",
+          "details"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_sections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_duration_minutes",
+        "planned_total_minutes",
+        "passed",
+        "session_totals",
+        "details"
+      ],
+      "properties": {
+        "expected_duration_minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "planned_total_minutes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "session_totals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "session_label",
+              "planned_total_minutes",
+              "passed"
+            ],
+            "properties": {
+              "session_label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "planned_total_minutes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "passed": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "details": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "standards_source_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "details"
+      ],
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "output_file_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "json",
+        "markdown",
+        "docx_count",
+        "validation_report"
+      ],
+      "properties": {
+        "json": {
+          "type": "boolean"
+        },
+        "markdown": {
+          "type": "boolean"
+        },
+        "docx_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validation_report": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

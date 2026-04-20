@@ -1,0 +1,148 @@
+drag-and-sort categorization
+matching pairs
+cover-and-reveal
+movable highlight marking
+equation builder
+number line placement
+table completion drag-fill
+coordinate point plotting
+error detective spotting
+true/false sorting
+which-doesn't-belong selection
+step sequencing
+puzzle assembly
+ranking and ordering cards
+graph-to-scenario matching
+movable sticky-note responses
+sentence builder
+label-the-diagram placement
+concept map building
+flowchart completion
+pattern continuation
+estimate-then-reveal prediction
+comparison sorting
+cause-and-effect linking
+fraction/ratio model building
+graph interpretation matching
+visual vocabulary matching
+fill-the-blank card placement
+inequality number line placement
+build-a-model representation
+spot-the-difference comparison
+mystery box reveal
+clue elimination
+multi-step problem path selection
+balance scale equation modeling
+drag-to-justify reasoning
+area model construction
+coordinate grid movement challenge
+variable substitution builder
+data table interpretation sort
+real-world scenario matching
+build-the-rule activity
+equation vs expression sorting
+card flip reveal discussion
+peer answer check placement
+drag-the-evidence reasoning
+step-by-step solution reconstruction
+pattern rule discovery arrangement
+graph slope comparison
+inequality direction chooser
+build-a-story problem activity
+movable discussion marker selection
+equation step sorting
+incorrect example identification
+drag-to-complete pattern
+proportional relationship sorter
+value substitution matching
+graph point matching
+build-the-table activity
+missing-step detective
+math vocabulary categorization
+definition matching
+unit rate comparison sort
+proportional vs non-proportional sorting
+graph feature labeling
+identify the independent variable activity
+identify the dependent variable activity
+scenario-to-equation matching
+inequality solution region placement
+scale factor comparison
+fraction-to-decimal matching
+decimal-to-percent matching
+equation balance correction
+graph interpretation choice marking
+equation structure building
+algebra tile arrangement
+step-by-step equation solving reconstruction
+slope triangle builder
+intercept identification placement
+graph trend classification
+increasing vs decreasing sort
+table-to-equation matching
+visual pattern rule building
+geometric figure property sorting
+coordinate reflection placement
+coordinate translation movement
+coordinate rotation identification
+equation error correction drag
+number pattern continuation arrangement
+proportional table completion
+graph slope comparison sorting
+matching units to quantities
+inequality graph interpretation placement
+variable meaning identification
+context-to-variable mapping
+matching graph shape to situation
+estimation placement on number line
+mathematical reasoning evidence sorting
+compare strategies activity
+strategy matching to problems
+model-to-equation matching
+word problem structure sorting
+information relevance sorting
+build-the-argument reasoning cards
+mathematical claim-evidence matching
+problem type categorization
+graph quadrant identification placement
+table trend classification
+input-output machine builder
+graph steepness comparison placement
+rate-of-change interpretation matching
+build-the-expression activity
+term classification sort
+coefficient identification marking
+constant identification marking
+algebra vocabulary placement
+visual model matching
+equation solution path builder
+check-the-solution placement
+inequality test point placement
+estimate-and-adjust movement activity
+scenario ranking by rate of change
+quantity comparison ordering
+magnitude ordering cards
+data interpretation sorting
+variable relationship classification
+context clue identification placement
+build-a-math-explanation sentence strips
+discussion evidence placement
+reasoning ladder building
+concept hierarchy arrangement
+strategy ranking activity
+representation matching (table/graph/equation)
+solution method sorting
+problem difficulty ranking
+mathematical structure identification
+model comparison sorting
+graph feature matching
+rate comparison sorting
+reasoning chain reconstruction
+mathematical debate claim placement
+mathematical error explanation placement
+concept review matching
+problem classification sorting
+visual representation interpretation
+algebra structure sorting
+proportional reasoning builder
+mathematical argument sequencing

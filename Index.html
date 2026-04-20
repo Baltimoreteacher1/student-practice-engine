@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notebook Engine</title>
+  <style>
+    :root{
+      --bg:#f6f1e8;
+      --bg-2:#efe4d3;
+      --panel:#fffdf8;
+      --line:rgba(58,52,45,.12);
+      --text:#27231f;
+      --muted:#71675e;
+      --accent:#c65b3d;
+      --accent-2:#0e6f73;
+      --accent-3:#d5a84c;
+      --ok:#2d8b57;
+      --danger:#b53f33;
+      --shadow:0 26px 70px rgba(64,48,31,.12);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --font-ui:"Aptos","Segoe UI",sans-serif;
+      --font-display:"Iowan Old Style","Palatino Linotype",serif;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:var(--font-ui);
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(198,91,61,.10), transparent 28%),
+        radial-gradient(circle at 88% 10%, rgba(14,111,115,.12), transparent 24%),
+        linear-gradient(180deg, #fcfaf6 0%, var(--bg) 46%, var(--bg-2) 100%);
+      min-height:100vh;
+    }
+
+    .shell{
+      width:min(1180px, calc(100% - 28px));
+      margin:0 auto;
+      padding:24px 0 40px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      padding:28px;
+      border-radius:var(--radius-xl);
+      border:1px solid var(--line);
+      background:linear-gradient(135deg, rgba(255,253,248,.96), rgba(255,244,227,.98));
+      box-shadow:var(--shadow);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      width:260px;
+      height:260px;
+      right:-60px;
+      top:-20px;
+      border-radius:36px;
+      background:
+        linear-gradient(145deg, rgba(198,91,61,.18), rgba(14,111,115,.12)),
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.72), transparent 34%);
+      transform:rotate(18deg);
+      border:1px solid rgba(255,255,255,.45);
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(14,111,115,.10);
+      border:1px solid rgba(14,111,115,.18);
+      color:var(--accent-2);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    h1{
+      margin:16px 0 10px;
+      font-family:var(--font-display);
+      font-size:clamp(38px, 7vw, 72px);
+      line-height:.92;
+      letter-spacing:-.05em;
+      max-width:9ch;
+    }
+
+    .hero-copy{
+      max-width:64ch;
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:15px;
+    }
+
+    .stats{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .stat{
+      padding:14px 16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.72);
+      min-width:140px;
+    }
+
+    .stat strong{
+      display:block;
+      font-size:22px;
+      margin-top:4px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:340px 1fr;
+      gap:22px;
+      margin-top:22px;
+      align-items:start;
+    }
+
+    .stack{
+      display:grid;
+      gap:22px;
+      position:sticky;
+      top:16px;
+    }
+
+    .panel{
+      border-radius:var(--radius-lg);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,253,248,.96), rgba(255,248,238,.98));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel-inner{padding:22px}
+    .panel h2,.panel h3{margin:0 0 12px}
+
+    .small{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    label{
+      display:block;
+      margin:14px 0 6px;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    input[type="text"], input[type="password"], textarea, input[type="file"]{
+      width:100%;
+      border:1px solid rgba(58,52,45,.14);
+      border-radius:16px;
+      padding:13px 14px;
+      font:inherit;
+      color:var(--text);
+      background:#fffdfa;
+    }
+
+    textarea{min-height:110px;resize:vertical}
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    .button{
+      appearance:none;
+      border:0;
+      border-radius:16px;
+      padding:14px 18px;
+      font:inherit;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .14s ease, box-shadow .14s ease, opacity .14s ease;
+    }
+
+    .button:hover{transform:translateY(-1px)}
+    .button:disabled{opacity:.55;cursor:wait}
+
+    .primary{
+      color:#fffaf4;
+      background:linear-gradient(135deg, var(--accent), #d97c4f);
+      box-shadow:0 14px 30px rgba(198,91,61,.22);
+    }
+
+    .secondary{
+      color:var(--text);
+      background:linear-gradient(135deg, #fff6ea, #fffdf9);
+      border:1px solid rgba(58,52,45,.1);
+    }
+
+    .status{
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:16px;
+      font-size:14px;
+      display:none;
+      white-space:pre-wrap;
+    }
+
+    .status.show{display:block}
+    .status.ok{background:rgba(45,139,87,.10);color:var(--ok);border:1px solid rgba(45,139,87,.18)}
+    .status.error{background:rgba(181,63,51,.08);color:var(--danger);border:1px solid rgba(181,63,51,.16)}
+
+    .drop{
+      border:1.5px dashed rgba(58,52,45,.18);
+      border-radius:22px;
+      padding:22px;
+      background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,247,236,.85));
+    }
+
+    .check{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:14px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .check input{width:18px;height:18px}
+
+    .result{
+      display:none;
+      margin-top:18px;
+      border-top:1px solid var(--line);
+      padding-top:18px;
+    }
+
+    .result.show{display:block}
+
+    .result-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+    }
+
+    .link-card{
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      border-radius:18px;
+      border:1px solid var(--line);
+      padding:16px;
+      background:rgba(255,255,255,.78);
+    }
+
+    .link-card strong{display:block;margin-bottom:6px}
+
+    .history{
+      display:grid;
+      gap:12px;
+    }
+
+    .history-item{
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.7);
+      padding:14px;
+    }
+
+    .history-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .history-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .history-links a{
+      color:var(--accent-2);
+      text-decoration:none;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.72);
+    }
+
+    .footer-note{
+      margin-top:16px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    @media (max-width: 920px){
+      .layout{grid-template-columns:1fr}
+      .stack{position:static}
+      .row,.result-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Notebook Engine · Local Upload App</div>
+      <h1>Upload the lesson. Get the Session 1 notebook.</h1>
+      <p class="hero-copy">This local app reads a PowerPoint lesson deck through the engine, preserves the source problems, selects premium interactive activity structures from the local library, and renders a flagship-quality five-slide Session 1 student notebook deck.</p>
+      <div class="stats">
+        <div class="stat"><span class="small">Input</span><strong>.pptx deck</strong></div>
+        <div class="stat"><span class="small">Planner</span><strong>OpenAI JSON</strong></div>
+        <div class="stat"><span class="small">Outputs</span><strong>1 flagship deck</strong></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <div class="panel">
+          <div class="panel-inner">
+            <h2>Settings</h2>
+            <p class="small">Save the API key and your default model once. Guidance is optional and gets appended to future generation requests.</p>
+            <label for="apiKey">OpenAI API Key</label>
+            <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+            <label for="model">Model</label>
+            <input id="model" type="text" placeholder="gpt-5.4" />
+            <label for="defaultGuidance">Default Guidance</label>
+            <textarea id="defaultGuidance" placeholder="Optional: Keep the notebooks highly visual, use grade 6 language, preserve teacher examples, include SPED supports..."></textarea>
+            <button id="saveSettings" class="button secondary" type="button">Save Settings</button>
+            <div id="settingsStatus" class="status"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-inner">
+            <h3>Recent Runs</h3>
+            <p class="small">Each job keeps the uploaded source deck, source extraction JSON, plan JSON, and the rendered notebook output.</p>
+            <div id="history" class="history"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-inner">
+          <h2>Generate Notebooks</h2>
+          <p class="small">Upload one PowerPoint deck. The app builds a per-job folder automatically and writes the notebook outputs there. Use the offline option only to smoke-test the pipeline without calling the API.</p>
+          <form id="generateForm">
+            <div class="drop">
+              <label for="deckFile">Source Deck</label>
+              <input id="deckFile" name="deck" type="file" accept=".pptx" required />
+              <div class="row">
+                <div>
+                  <label for="jobModel">Model Override</label>
+                  <input id="jobModel" name="model" type="text" placeholder="Leave blank to use saved model" />
+                </div>
+                <div>
+                  <label for="jobGuidance">Run-Specific Guidance</label>
+                  <textarea id="jobGuidance" name="guidance" placeholder="Optional: Add extra notebook constraints for this run only."></textarea>
+                </div>
+              </div>
+              <label class="check"><input id="offline" name="offline" type="checkbox" /> Run offline smoke test instead of calling OpenAI</label>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;">
+              <button id="generateButton" class="button primary" type="submit">Generate Session 1 PPTX</button>
+            </div>
+          </form>
+          <div id="runStatus" class="status"></div>
+          <div id="result" class="result">
+            <h3>Latest Result</h3>
+            <div id="resultMeta" class="small" style="margin-bottom:12px;"></div>
+            <div class="result-grid" id="resultGrid"></div>
+          </div>
+          <p class="footer-note">Best results come from decks with real text and embedded images. Image-only decks will still need a later OCR or slide-export upgrade.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API_BASE = (window.API_BASE || '').replace(/\/$/, '');
+    const apiUrl = (path) => `${API_BASE}${path}`;
+    const resolveLink = (href) => {
+      if(!href){
+        return href;
+      }
+      if(/^https?:\/\//i.test(href)){
+        return href;
+      }
+      if(!API_BASE){
+        return href;
+      }
+      return new URL(href, `${API_BASE}/`).toString();
+    };
+
+    const settingsStatus = document.getElementById('settingsStatus');
+    const runStatus = document.getElementById('runStatus');
+    const history = document.getElementById('history');
+    const result = document.getElementById('result');
+    const resultGrid = document.getElementById('resultGrid');
+    const resultMeta = document.getElementById('resultMeta');
+    const generateButton = document.getElementById('generateButton');
+
+    function showStatus(node, kind, message){
+      node.className = `status show ${kind}`;
+      node.textContent = message;
+    }
+
+    function clearStatus(node){
+      node.className = 'status';
+      node.textContent = '';
+    }
+
+    function escapeHtml(value){
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderHistory(jobs){
+      history.innerHTML = '';
+      if(!jobs.length){
+        history.innerHTML = '<div class="small">No runs yet. Your first upload will appear here.</div>';
+        return;
+      }
+      for(const job of jobs){
+        const links = [];
+        if(job.links?.session1) links.push(`<a href="${resolveLink(job.links.session1)}" target="_blank">Session 1</a>`);
+        if(job.links?.session2) links.push(`<a href="${resolveLink(job.links.session2)}" target="_blank">Session 2</a>`);
+        if(job.links?.plan) links.push(`<a href="${resolveLink(job.links.plan)}" target="_blank">Plan JSON</a>`);
+        const modelText = job.offline ? 'offline planner' : escapeHtml(job.model || '');
+        history.insertAdjacentHTML('beforeend', `
+          <div class="history-item">
+            <div class="history-top">
+              <div>
+                <strong>${escapeHtml(job.source_filename || 'Job')}</strong>
+                <div class="small">${escapeHtml(job.created_at || '')}</div>
+              </div>
+              <span class="pill">${modelText}</span>
+            </div>
+            <div class="history-links">${links.join('')}</div>
+          </div>
+        `);
+      }
+    }
+
+    function renderResult(data){
+      result.classList.add('show');
+      resultMeta.textContent = `${data.source_filename} · ${data.created_at} · ${data.offline ? 'offline planner' : data.model}`;
+      const cards = [
+        ['Session 1 Notebook', resolveLink(data.links.session1), 'Rendered student notebook deck for the first lesson session.'],
+        data.links?.session2 ? ['Session 2 Notebook', resolveLink(data.links.session2), 'Rendered student notebook deck for the second lesson session.'] : null,
+        ['Notebook Plan JSON', resolveLink(data.links.plan), 'Structured plan generated from the source deck.'],
+        ['Source Deck JSON', resolveLink(data.links.deck), 'Extracted slide text, notes, and images used by the planner.'],
+      ].filter(Boolean);
+      resultGrid.innerHTML = cards.map(([title, href, body]) => `
+        <a class="link-card" href="${href}" target="_blank">
+          <strong>${title}</strong>
+          <span class="small">${body}</span>
+        </a>
+      `).join('');
+    }
+
+    async function loadSettings(){
+      const response = await fetch(apiUrl('/api/settings'));
+      const data = await response.json();
+      document.getElementById('model').value = data.model || '';
+      document.getElementById('defaultGuidance').value = data.default_guidance || '';
+      if(data.has_api_key){
+        document.getElementById('apiKey').placeholder = 'Saved locally. Enter a new key only to replace it.';
+      }
+    }
+
+    async function loadJobs(){
+      const response = await fetch(apiUrl('/api/recent-jobs'));
+      const data = await response.json();
+      renderHistory(data.jobs || []);
+    }
+
+    document.getElementById('saveSettings').addEventListener('click', async () => {
+      clearStatus(settingsStatus);
+      const payload = {
+        api_key: document.getElementById('apiKey').value,
+        model: document.getElementById('model').value,
+        default_guidance: document.getElementById('defaultGuidance').value,
+      };
+      const response = await fetch(apiUrl('/api/settings'), {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if(!response.ok){
+        showStatus(settingsStatus, 'error', data.error || 'Could not save settings.');
+        return;
+      }
+      document.getElementById('apiKey').value = '';
+      showStatus(settingsStatus, 'ok', 'Settings saved locally for future runs.');
+      await loadSettings();
+    });
+
+    document.getElementById('generateForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearStatus(runStatus);
+      result.classList.remove('show');
+      const fileInput = document.getElementById('deckFile');
+      if(!fileInput.files.length){
+        showStatus(runStatus, 'error', 'Choose a .pptx deck first.');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('deck', fileInput.files[0]);
+      formData.append('model', document.getElementById('jobModel').value);
+      formData.append('guidance', document.getElementById('jobGuidance').value);
+      if(document.getElementById('offline').checked){
+        formData.append('offline', '1');
+      }
+      generateButton.disabled = true;
+      showStatus(runStatus, 'ok', 'Generating notebooks. This can take a little while for larger decks...');
+      try{
+        const response = await fetch(apiUrl('/api/generate'), {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        if(!response.ok){
+          showStatus(runStatus, 'error', data.error || 'Generation failed.');
+          return;
+        }
+        showStatus(runStatus, 'ok', 'Notebook generation finished.');
+        renderResult(data.job);
+        document.getElementById('jobGuidance').value = '';
+        document.getElementById('jobModel').value = '';
+        document.getElementById('offline').checked = false;
+        fileInput.value = '';
+        await loadJobs();
+      } catch (error) {
+        showStatus(runStatus, 'error', error.message || 'Generation failed.');
+      } finally {
+        generateButton.disabled = false;
+      }
+    });
+
+    loadSettings();
+    loadJobs();
+  </script>
+</body>
+</html>

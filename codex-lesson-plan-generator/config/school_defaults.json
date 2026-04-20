@@ -1,0 +1,20 @@
+{
+  "school_name": "Example Middle School",
+  "default_grade": "6",
+  "default_subject": "Mathematics",
+  "active_student_supports": [],
+  "phase_timing": {
+    "opening": 10,
+    "mini_lesson": 18,
+    "guided_practice": 10,
+    "independent_practice": 10,
+    "closure": 7
+  },
+  "docx_style": {
+    "body_font": "Calibri",
+    "heading_font": "Calibri"
+  },
+  "materials_defaults": [
+    "Teacher slide deck"
+  ]
+}

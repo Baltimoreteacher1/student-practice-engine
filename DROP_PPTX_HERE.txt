@@ -1,0 +1,16 @@
+Drop one teacher slide deck (.pptx) into this folder, then double-click:
+
+Generate Lesson Plan.command
+
+If you want to run from Terminal instead:
+
+python3 run.py
+
+The lesson plan date uses today's date automatically.
+If you need a fixed date, set date_override in:
+
+codex-lesson-plan-generator/config/generator_config.json
+
+Finished lesson plans are saved in:
+
+~/Documents/Chatgpt Notebook and Lesson plans/Lesson Plan Output

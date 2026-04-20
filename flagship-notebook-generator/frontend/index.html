@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flagship Notebook Generator</title>
+  <style>
+    :root{
+      --bg:#f6f1e8;
+      --bg-2:#e9dcc6;
+      --panel:#fffdf8;
+      --line:rgba(48,42,34,.12);
+      --text:#221f1a;
+      --muted:#6f675f;
+      --accent:#c45d40;
+      --accent-2:#0d6c71;
+      --accent-3:#d0a24a;
+      --ok:#2f8759;
+      --danger:#b44839;
+      --shadow:0 28px 70px rgba(65,52,38,.13);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --font-ui:"Aptos","Segoe UI",sans-serif;
+      --font-display:"Iowan Old Style","Palatino Linotype",serif;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font-family:var(--font-ui);
+      background:
+        radial-gradient(circle at top left, rgba(196,93,64,.12), transparent 26%),
+        radial-gradient(circle at 85% 12%, rgba(13,108,113,.13), transparent 24%),
+        linear-gradient(180deg, #fcfaf6 0%, var(--bg) 44%, var(--bg-2) 100%);
+    }
+
+    a, button, input, textarea{font:inherit}
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible{
+      outline:3px solid rgba(13,108,113,.28);
+      outline-offset:3px;
+    }
+
+    .shell{
+      width:min(1200px, calc(100% - 28px));
+      margin:0 auto;
+      padding:24px 0 40px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:var(--radius-xl);
+      border:1px solid var(--line);
+      background:linear-gradient(135deg, rgba(255,253,248,.97), rgba(255,244,227,.99));
+      box-shadow:var(--shadow);
+      padding:30px;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-46px;
+      top:-34px;
+      width:250px;
+      height:250px;
+      border-radius:38px;
+      transform:rotate(18deg);
+      background:
+        linear-gradient(145deg, rgba(196,93,64,.18), rgba(13,108,113,.14)),
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.78), transparent 34%);
+      border:1px solid rgba(255,255,255,.42);
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(13,108,113,.09);
+      border:1px solid rgba(13,108,113,.16);
+      color:var(--accent-2);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    h1{
+      margin:16px 0 10px;
+      max-width:10ch;
+      font-family:var(--font-display);
+      font-size:clamp(40px, 7vw, 76px);
+      line-height:.92;
+      letter-spacing:-.05em;
+    }
+
+    .hero-copy{
+      margin:0;
+      max-width:66ch;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:15px;
+    }
+
+    .hero-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .meta-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.76);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:340px 1fr;
+      gap:22px;
+      margin-top:22px;
+      align-items:start;
+    }
+
+    .stack{
+      display:grid;
+      gap:22px;
+      position:sticky;
+      top:16px;
+    }
+
+    .panel{
+      border-radius:var(--radius-lg);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,253,248,.96), rgba(255,248,238,.99));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel-inner{padding:22px}
+    .panel h2,.panel h3{margin:0 0 12px}
+
+    .small{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    label{
+      display:block;
+      margin:14px 0 6px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    input[type="text"], input[type="password"], input[type="file"], textarea{
+      width:100%;
+      border:1px solid rgba(48,42,34,.14);
+      border-radius:16px;
+      padding:13px 14px;
+      color:var(--text);
+      background:#fffdfa;
+    }
+
+    textarea{
+      min-height:112px;
+      resize:vertical;
+    }
+
+    .button{
+      appearance:none;
+      border:0;
+      border-radius:16px;
+      padding:14px 18px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .14s ease, opacity .14s ease;
+    }
+
+    .button:hover{transform:translateY(-1px)}
+    .button:disabled{opacity:.55;cursor:wait}
+
+    .primary{
+      color:#fffaf4;
+      background:linear-gradient(135deg, var(--accent), #d67a4c);
+      box-shadow:0 14px 30px rgba(196,93,64,.24);
+    }
+
+    .secondary{
+      color:var(--text);
+      background:linear-gradient(135deg, #fff6ea, #fffdf9);
+      border:1px solid rgba(48,42,34,.1);
+    }
+
+    .status{
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:16px;
+      font-size:14px;
+      display:none;
+      white-space:pre-wrap;
+    }
+
+    .status.show{display:block}
+    .status.ok{background:rgba(47,135,89,.10);color:var(--ok);border:1px solid rgba(47,135,89,.18)}
+    .status.error{background:rgba(180,72,57,.08);color:var(--danger);border:1px solid rgba(180,72,57,.16)}
+
+    .check{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:14px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .check input{width:18px;height:18px}
+
+    .bundle-list{
+      margin:0;
+      padding-left:18px;
+      display:grid;
+      gap:8px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .bundle-list strong{color:var(--text)}
+
+    .health{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    .health-dot{
+      width:11px;
+      height:11px;
+      border-radius:999px;
+      background:#b9b1a7;
+      box-shadow:0 0 0 4px rgba(185,177,167,.18);
+    }
+
+    .health-dot.ok{
+      background:var(--ok);
+      box-shadow:0 0 0 4px rgba(47,135,89,.18);
+    }
+
+    .health-dot.error{
+      background:var(--danger);
+      box-shadow:0 0 0 4px rgba(180,72,57,.18);
+    }
+
+    .note-card{
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.72);
+      padding:16px;
+    }
+
+    .note-card h3{
+      margin:0 0 8px;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+    }
+
+    code{
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.94em;
+      background:rgba(13,108,113,.08);
+      padding:2px 6px;
+      border-radius:8px;
+    }
+
+    @media (max-width: 920px){
+      .layout{grid-template-columns:1fr}
+      .stack{position:static}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Flagship Notebook Generator</div>
+      <h1>Upload slides. Download both PPTX notebooks.</h1>
+      <p class="hero-copy">This hosted frontend reads a source PowerPoint deck through the backend engine, preserves the source problems, chooses premium interactive activity moves, and returns a download bundle with Session 1, Session 2, and the planning artifacts that created them.</p>
+      <div class="hero-meta">
+        <span class="meta-pill">Cloudflare Pages Frontend</span>
+        <span class="meta-pill">PPTX Outputs Only</span>
+        <span class="meta-pill">OpenAI Planner + Structured JSON</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <div class="panel">
+          <div class="panel-inner">
+            <h2>Browser Settings</h2>
+            <p class="small">These settings stay in this browser only. Your API key is sent only when you generate a notebook bundle.</p>
+
+            <label for="apiKey">ChatGPT / OpenAI API Key</label>
+            <input id="apiKey" type="password" placeholder="Paste your OpenAI API key (sk-...)" autocomplete="off" />
+
+            <label for="model">Model</label>
+            <input id="model" type="text" placeholder="gpt-5.4" />
+
+            <label for="defaultGuidance">Default Guidance</label>
+            <textarea id="defaultGuidance" placeholder="Optional: Keep the notebooks highly visual, preserve original examples, include SPED supports, emphasize algebra reasoning..."></textarea>
+
+            <button id="saveSettings" class="button secondary" type="button">Save In Browser</button>
+            <div id="settingsStatus" class="status"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-inner">
+            <h3>Backend Status</h3>
+            <div class="health">
+              <span id="healthDot" class="health-dot"></span>
+              <span id="healthText">Checking API connection...</span>
+            </div>
+            <p class="small" style="margin-top:12px;">If you deploy the frontend on Cloudflare Pages and the backend elsewhere, either set <code>window.API_BASE</code> in <code>frontend/config.js</code> or enable the included Cloudflare proxy.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-inner">
+          <h2>Generate Download Bundle</h2>
+          <p class="small">Upload one <code>.pptx</code> lesson deck. The API returns a single ZIP download with both notebooks and the source-planning JSON.</p>
+
+          <form id="generateForm">
+            <label for="deckFile">Source Deck</label>
+            <input id="deckFile" name="deck" type="file" accept=".pptx" required />
+
+            <label for="runGuidance">Run-Specific Guidance</label>
+            <textarea id="runGuidance" name="guidance" placeholder="Optional: Add notebook constraints for this run only."></textarea>
+
+            <label class="check"><input id="offline" name="offline" type="checkbox" /> Use offline smoke-test mode instead of calling OpenAI</label>
+
+            <div style="display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;">
+              <button id="generateButton" class="button primary" type="submit">Generate PPTX Bundle</button>
+            </div>
+          </form>
+
+          <div id="runStatus" class="status"></div>
+
+          <div class="note-card" style="margin-top:18px;">
+            <h3>ZIP Contents</h3>
+            <ul class="bundle-list">
+              <li><strong>outputs/Session 1 - Student Notebook.pptx</strong></li>
+              <li><strong>outputs/Session 2 - Student Notebook.pptx</strong></li>
+              <li><strong>diagnostics/notebook_plan.json</strong></li>
+              <li><strong>diagnostics/source_deck.json</strong></li>
+              <li><strong>input/your-uploaded-source-deck.pptx</strong></li>
+              <li><strong>assets/</strong> source images extracted from the deck when available</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="./config.js"></script>
+  <script>
+    const API_BASE = (window.API_BASE || '').replace(/\/$/, '');
+    const apiUrl = (path) => `${API_BASE}${path}`;
+    const STORAGE_KEY = 'flagship-notebook-generator-settings';
+
+    const settingsStatus = document.getElementById('settingsStatus');
+    const runStatus = document.getElementById('runStatus');
+    const generateButton = document.getElementById('generateButton');
+    const healthDot = document.getElementById('healthDot');
+    const healthText = document.getElementById('healthText');
+
+    function showStatus(node, kind, message){
+      node.className = `status show ${kind}`;
+      node.textContent = message;
+    }
+
+    function clearStatus(node){
+      node.className = 'status';
+      node.textContent = '';
+    }
+
+    function loadSettings(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw){
+          document.getElementById('model').value = 'gpt-5.4';
+          return;
+        }
+        const data = JSON.parse(raw);
+        document.getElementById('apiKey').value = data.apiKey || '';
+        document.getElementById('model').value = data.model || 'gpt-5.4';
+        document.getElementById('defaultGuidance').value = data.defaultGuidance || '';
+      } catch (_error) {
+        document.getElementById('model').value = 'gpt-5.4';
+      }
+    }
+
+    function saveSettings(){
+      const payload = {
+        apiKey: document.getElementById('apiKey').value.trim(),
+        model: document.getElementById('model').value.trim() || 'gpt-5.4',
+        defaultGuidance: document.getElementById('defaultGuidance').value.trim(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      showStatus(settingsStatus, 'ok', 'Saved locally in this browser.');
+    }
+
+    function parseFilename(headerValue){
+      if(!headerValue){
+        return 'flagship-notebook-bundle.zip';
+      }
+      const match = headerValue.match(/filename="?([^"]+)"?/i);
+      return match ? match[1] : 'flagship-notebook-bundle.zip';
+    }
+
+    function downloadBlob(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function checkHealth(){
+      try{
+        const response = await fetch(apiUrl('/api/health'));
+        if(!response.ok){
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        healthDot.className = 'health-dot ok';
+        healthText.textContent = `Connected. Default model: ${data.default_model || 'unknown'}`;
+      } catch (error) {
+        healthDot.className = 'health-dot error';
+        healthText.textContent = `API unavailable. ${error.message}`;
+      }
+    }
+
+    document.getElementById('saveSettings').addEventListener('click', saveSettings);
+
+    document.getElementById('generateForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearStatus(runStatus);
+
+      const fileInput = document.getElementById('deckFile');
+      if(!fileInput.files.length){
+        showStatus(runStatus, 'error', 'Choose a .pptx deck first.');
+        return;
+      }
+
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const model = document.getElementById('model').value.trim() || 'gpt-5.4';
+      const defaultGuidance = document.getElementById('defaultGuidance').value.trim();
+      const runGuidance = document.getElementById('runGuidance').value.trim();
+      const offline = document.getElementById('offline').checked;
+
+      if(!offline && !apiKey){
+        showStatus(runStatus, 'error', 'Add an OpenAI API key or switch on offline mode.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('deck', fileInput.files[0]);
+      formData.append('model', model);
+      formData.append('guidance', [defaultGuidance, runGuidance].filter(Boolean).join(' '));
+      if(offline){
+        formData.append('offline', '1');
+      }
+
+      generateButton.disabled = true;
+      showStatus(runStatus, 'ok', 'Generating notebooks. Larger decks can take a bit...');
+
+      try{
+        const response = await fetch(apiUrl('/api/generate'), {
+          method: 'POST',
+          body: formData,
+          headers: apiKey ? {'X-OpenAI-API-Key': apiKey} : {},
+        });
+
+        if(!response.ok){
+          let message = `Generation failed with HTTP ${response.status}.`;
+          try{
+            const data = await response.json();
+            if(data.error){
+              message = data.error;
+            }
+          } catch (_error) {
+            const text = await response.text();
+            if(text){
+              message = text;
+            }
+          }
+          throw new Error(message);
+        }
+
+        const blob = await response.blob();
+        const filename = parseFilename(response.headers.get('Content-Disposition'));
+        downloadBlob(blob, filename);
+        showStatus(runStatus, 'ok', `Bundle ready. Downloaded ${filename}.`);
+        fileInput.value = '';
+        document.getElementById('runGuidance').value = '';
+        document.getElementById('offline').checked = false;
+      } catch (error) {
+        showStatus(runStatus, 'error', error.message || 'Generation failed.');
+      } finally {
+        generateButton.disabled = false;
+      }
+    });
+
+    loadSettings();
+    checkHealth();
+  </script>
+</body>
+</html>

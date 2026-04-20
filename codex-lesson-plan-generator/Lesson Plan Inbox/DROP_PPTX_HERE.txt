@@ -1,0 +1,13 @@
+This legacy folder is no longer the default live inbox.
+
+Drop one teacher slide deck (.pptx) into:
+
+../lesson-plan-engine/INBOX/
+
+Then run:
+
+python3 run.py
+
+If you want to use a different deck somewhere else, run:
+
+python3 run.py --deck /full/path/to/deck.pptx
