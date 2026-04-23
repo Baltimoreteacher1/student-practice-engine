@@ -209,6 +209,10 @@
           "type": "string",
           "minLength": 1
         },
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        },
         "supports": {
           "type": "array",
           "minItems": 1,
@@ -216,6 +220,10 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "matrix_supports": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -235,7 +243,8 @@
         "guided_practice_collaborative_learning",
         "independent_practice_application_stations",
         "closure_exit_ticket_assessment",
-        "differentiation_sped_esol_supports_and_teacher_notes"
+        "differentiation_sped_esol_supports_and_teacher_notes",
+        "reference_render_context"
       ],
       "properties": {
         "session_label": {
@@ -473,6 +482,9 @@
               }
             }
           }
+        },
+        "reference_render_context": {
+          "type": "object"
         }
       }
     },

@@ -19,6 +19,19 @@ Use the root local runtime for normal daily notebook generation, debugging, inbo
 
 Use `flagship-notebook-generator/` only when the task is explicitly about the hosted upload workflow, API service, or web UI.
 
+## Default notebook structure
+
+Unless the user explicitly asks for the full notebook, the default notebook path is the compressed Session 1 structure:
+
+1. `Objectives + Session Map`
+2. `Be Curious`
+3. `Vocabulary + Reference Tool`
+4. `Guided Problem`
+5. `Interactive Activity`
+6. `Best-Fit Interactive Review`
+
+The guided/source problem should preserve source wording when available, and the vocabulary slide should stay anchored to lesson math language rather than generic launch words.
+
 ## Where to change code
 
 - change durable workflow contracts here in `notebook-engine/`
@@ -33,3 +46,17 @@ Use `flagship-notebook-generator/` only when the task is explicitly about the ho
 3. Reproduce with the smallest local command, app flow, or folder-runner path.
 4. Fix the real implementation first.
 5. Record any durable contract change back in this canonical folder.
+
+## Validation
+
+Canonical notebook verification:
+
+```bash
+python3 ../validation-tools/src/verify_notebook_engine.py
+```
+
+Deterministic notebook benchmark:
+
+```bash
+python3 ../validation-tools/src/benchmark_notebook_quality.py
+```

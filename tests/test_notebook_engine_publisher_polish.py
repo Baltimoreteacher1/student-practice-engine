@@ -187,6 +187,40 @@ class NotebookEnginePublisherPolishTests(unittest.TestCase):
         self.assertIn("dot plot", questions[1].lower())
         self.assertTrue(all(is_specific_discussion_question(question) for question in questions[:2]))
 
+    def test_generated_discussion_questions_are_specific_to_area_reasoning(self) -> None:
+        questions = generated_discussion_questions(
+            {
+                "kind": "practice",
+                "title": "Interactive Activity",
+                "subtitle": "Use the triangle decomposition to find the area of the octagon.",
+                "primary_text": "How can you determine the area of the octagon using the triangles?",
+                "tasks": ["Why is the height of one triangle 18 inches?"],
+                "source_problem_cards": ["How can you determine the area of the octagon using the triangles?"],
+            }
+        )
+
+        self.assertGreaterEqual(len(questions), 2)
+        self.assertIn("measurements", questions[0].lower())
+        self.assertIn("area model", questions[1].lower())
+        self.assertTrue(all(is_specific_discussion_question(question) for question in questions[:2]))
+
+    def test_generated_discussion_questions_are_specific_to_fraction_representations(self) -> None:
+        questions = generated_discussion_questions(
+            {
+                "kind": "practice",
+                "title": "Collaborative Practice",
+                "subtitle": "Compare the fraction, decimal, and percent representations.",
+                "primary_text": "Which representation helps you compare the equivalent values?",
+                "tasks": ["How do the equivalent values prove your answer?"],
+                "source_problem_cards": ["Which representation helps you compare the equivalent values?"],
+            }
+        )
+
+        self.assertGreaterEqual(len(questions), 2)
+        self.assertIn("representation", questions[0].lower())
+        self.assertIn("values", questions[1].lower())
+        self.assertTrue(all(is_specific_discussion_question(question) for question in questions[:2]))
+
     def test_ensure_peer_discussion_support_replaces_generic_compare_prompt(self) -> None:
         slide = {
             "kind": "practice",

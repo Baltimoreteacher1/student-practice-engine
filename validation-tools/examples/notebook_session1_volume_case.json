@@ -1,0 +1,187 @@
+{
+  "name": "notebook_session1_volume_case",
+  "deck": {
+    "lesson_title": "Determine the Volume of Rectangular Prisms",
+    "source_filename": "volume-prisms.pptx",
+    "slide_count": 5,
+    "summary": "Students use dimensions and the volume formula to solve the first prism problem.",
+    "keyword_candidates": [
+      "volume",
+      "rectangular prism",
+      "dimensions"
+    ],
+    "standards": [
+      "6.G.A.2"
+    ],
+    "slides": [
+      {
+        "slide_number": 1,
+        "title": "Learning Target",
+        "text": "We will determine the volume of rectangular prisms.",
+        "text_items": [
+          "We will determine the volume of rectangular prisms.",
+          "Students will explain how the dimensions and formula show the volume."
+        ],
+        "problem_texts": [],
+        "notes": "",
+        "image_count": 0
+      },
+      {
+        "slide_number": 2,
+        "title": "Be Curious",
+        "text": "What do you notice about the rectangular prism model?",
+        "text_items": [
+          "What do you notice about the rectangular prism model?",
+          "What do you wonder about the prism?"
+        ],
+        "problem_texts": [
+          "What do you notice about the rectangular prism model?"
+        ],
+        "notes": "",
+        "image_count": 1
+      },
+      {
+        "slide_number": 3,
+        "title": "Vocabulary",
+        "text": "rectangular prism, volume, dimensions",
+        "text_items": [
+          "Rectangular prism",
+          "Volume",
+          "Dimensions"
+        ],
+        "problem_texts": [],
+        "notes": "",
+        "image_count": 1
+      },
+      {
+        "slide_number": 4,
+        "title": "First Problem",
+        "text": "A rectangular prism has length 4 units, width 3 units, and height 2 units. What is its volume?",
+        "text_items": [
+          "Write V = l x w x h."
+        ],
+        "problem_texts": [
+          "A rectangular prism has length 4 units, width 3 units, and height 2 units. What is its volume?"
+        ],
+        "notes": "",
+        "image_count": 1
+      },
+      {
+        "slide_number": 5,
+        "title": "Your Turn",
+        "text": "Solve the prism problem and explain how you know your answer is correct.",
+        "text_items": [
+          "Use the formula, show the work, and label the answer."
+        ],
+        "problem_texts": [
+          "A rectangular prism has length 6 units, width 2 units, and height 3 units. What is its volume?"
+        ],
+        "notes": "",
+        "image_count": 0
+      }
+    ]
+  },
+  "plan_seed": {
+    "lesson_title": "Determine the Volume of Rectangular Prisms",
+    "subject": "Math",
+    "grade_level": "6",
+    "standards": [
+      "6.G.A.2"
+    ],
+    "topic_summary": "Use dimensions and the volume formula to solve the first prism problem.",
+    "session_1": {
+      "session_title": "Session 1 Student Notebook",
+      "session_subtitle": "",
+      "slides": []
+    }
+  },
+  "plan_expectations": {
+    "template_roles": [
+      [
+        "learning_target",
+        "learning_objectives"
+      ],
+      [
+        "be_curious",
+        "prior_session_review"
+      ],
+      [
+        "vocabulary",
+        "vocabulary_table"
+      ],
+      [
+        "worked_example",
+        "guided_practice"
+      ],
+      [
+        "practice",
+        "interactive_activity"
+      ],
+      [
+        "practice",
+        "best_fit_review"
+      ]
+    ],
+    "slides": [
+      {
+        "index": 0,
+        "primary_text_includes": [
+          "volume of rectangular prisms"
+        ]
+      },
+      {
+        "index": 2,
+        "vocabulary_words_include": [
+          "volume",
+          "rectangular prism",
+          "length",
+          "width",
+          "height"
+        ]
+      }
+    ]
+  },
+  "report_expectations": {
+    "passed": true,
+    "required_sessions": [
+      "Session 1"
+    ],
+    "sessions": {
+      "Session 1": {
+        "slide_count": {
+          "equals": 6
+        },
+        "problem_slide_count": {
+          "min": 3
+        },
+        "activity_slide_count": {
+          "min": 3
+        },
+        "engagement_slide_count": {
+          "min": 4
+        },
+        "engagement_modes": {
+          "includes": [
+            "build",
+            "discuss",
+            "notice",
+            "partner"
+          ]
+        },
+        "long_problem_stack_pages": {
+          "max_len": 0
+        },
+        "copyedit_flags": {
+          "max_len": 0
+        },
+        "issues": {
+          "max_len": 0
+        },
+        "problem_checks": {
+          "min_len": 3,
+          "all_full_source_problem_preserved": true
+        }
+      }
+    }
+  }
+}

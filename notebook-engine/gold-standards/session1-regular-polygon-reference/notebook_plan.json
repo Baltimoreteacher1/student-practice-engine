@@ -1,0 +1,432 @@
+{
+  "lesson_title": "Apply Area Concepts to Solve Problems",
+  "subject": "Math",
+  "grade_level": "6",
+  "standards": [
+    "6.G.A.1"
+  ],
+  "topic_summary": "Use decomposition and congruent triangles to find the area of a regular polygon.",
+  "session_1": {
+    "session_title": "Session 1 Student Notebook",
+    "session_subtitle": "A six-slide launch notebook that moves from carefully sequenced setup into interactive practice and review.",
+    "slides": [
+      {
+        "kind": "learning_target",
+        "section": "Objectives + Session Map",
+        "title": "Objectives + Session Map",
+        "subtitle": "Start with the goal, the standard, and today's four-step path.",
+        "primary_text": "I can find the area of a regular polygon by decomposing the figure into triangles.",
+        "secondary_text": "I can explain how decomposing the regular polygon into congruent triangles helps me find",
+        "bullets": [],
+        "tasks": [],
+        "response_prompt": "",
+        "sentence_starters": [],
+        "vocabulary": [],
+        "activity_name": "",
+        "activity_family": "",
+        "activity_instructions": "",
+        "movable_pieces": [],
+        "answer_check": "",
+        "source_slide_numbers": [
+          6
+        ],
+        "image_source_slide": 0,
+        "image_caption": "",
+        "premium_layout": "",
+        "premium_title": "",
+        "premium_text": "",
+        "premium_items": [],
+        "premium_table": [],
+        "partner_prompt": "",
+        "discussion_questions": [],
+        "context_anchor": "",
+        "practice_phase": "",
+        "flagship_activity_mode": "embedded_section",
+        "flagship_activity": {},
+        "template_role": "learning_objectives",
+        "template_family": "esol_exact_workbook",
+        "content_objective_b": "I can connect each side of the polygon to one congruent triangle.",
+        "standard_label": "6.G.A.1",
+        "language_frame_support": "I say: 'I find one triangle, then multiply by the number of triangles.'",
+        "session_map_steps": [
+          "Be Curious",
+          "Vocabulary",
+          "Try It",
+          "Discuss"
+        ],
+        "source_problem_cards": []
+      },
+      {
+        "kind": "be_curious",
+        "section": "Be Curious",
+        "title": "Be Curious",
+        "subtitle": "Look closely at the lesson setup before you solve.",
+        "primary_text": "👁 Notice: ___.",
+        "secondary_text": "🤔 Wonder: ___.",
+        "bullets": [],
+        "tasks": [],
+        "response_prompt": "What clue might help with the first problem?",
+        "sentence_starters": [],
+        "vocabulary": [],
+        "activity_name": "source clue reveal 3-4-5",
+        "activity_family": "reveal_discuss",
+        "activity_instructions": "Reveal or sort the source clues, terms, or details and discuss what you notice, wonder, or predict.",
+        "movable_pieces": [
+          "Regular Polygon",
+          "Octagon",
+          "Congruent Triangles",
+          "Decompose"
+        ],
+        "answer_check": "Each clue should connect to something you can notice wonder",
+        "source_slide_numbers": [
+          3,
+          4,
+          5
+        ],
+        "image_source_slide": 3,
+        "image_caption": "",
+        "premium_layout": "",
+        "premium_title": "",
+        "premium_text": "",
+        "premium_items": [],
+        "premium_table": [],
+        "partner_prompt": "",
+        "discussion_questions": [],
+        "context_anchor": "",
+        "practice_phase": "",
+        "flagship_activity_mode": "embedded_section",
+        "flagship_activity": {},
+        "template_role": "prior_session_review",
+        "template_family": "esol_exact_workbook",
+        "reference_panel_title": "First Problem",
+        "bridge_sentence": "Use one notice to predict how the first problem might be solved.",
+        "prior_formula": "A = n x (b x h) / 2",
+        "notice_lines": [
+          "I see a regular polygon.",
+          "I see congruent triangles.",
+          "I see labeled measures."
+        ],
+        "wonder_prompt": "How does one triangle help us find the whole area?",
+        "word_help": [
+          "Area · area",
+          "Regular Polygon · poligono regular",
+          "Octagon · octagono",
+          "Decompose · descomponer",
+          "Congruent Triangles · triangulos congruentes"
+        ],
+        "source_problem_cards": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ]
+      },
+      {
+        "kind": "vocabulary",
+        "section": "Vocabulary + Reference Tool",
+        "title": "Vocabulary + Reference Tool",
+        "subtitle": "Keep the lesson words and the solve-reference tool visible while you work.",
+        "primary_text": "Match each word to a definition, example, and visual clue from the lesson.",
+        "secondary_text": "Say: 'Area' means ___.",
+        "bullets": [],
+        "tasks": [],
+        "response_prompt": "",
+        "sentence_starters": [],
+        "vocabulary": [
+          {
+            "word": "Area",
+            "definition": "the amount of space inside a figure",
+            "example": "How can you decompose the octagon into shapes that you can find the area of?",
+            "visual_cue": "Session 1 Apply Area Concepts to Solve Problems"
+          },
+          {
+            "word": "Regular Polygon",
+            "definition": "a polygon with equal sides and equal angles",
+            "example": "Because each side has the same length, the octagon is a regular polygon.",
+            "visual_cue": "Because each side has the same length, the octagon is a regular polygon."
+          },
+          {
+            "word": "Octagon",
+            "definition": "an eight-sided polygon",
+            "example": "How can you decompose the octagon into shapes that you can find the area of?",
+            "visual_cue": "How can you decompose the octagon into shapes that you can find"
+          },
+          {
+            "word": "Decompose",
+            "definition": "to break a figure into smaller, known shapes",
+            "example": "How can you decompose the octagon into shapes that you can find the area of?",
+            "visual_cue": "How can you decompose the octagon into shapes that you can find"
+          },
+          {
+            "word": "Congruent Triangles",
+            "definition": "triangles that are the same size and the same shape",
+            "example": "Let's decompose the octagon into 8 congruent triangles.",
+            "visual_cue": "Let's decompose the octagon into 8 congruent triangles."
+          }
+        ],
+        "activity_name": "",
+        "activity_family": "",
+        "activity_instructions": "",
+        "movable_pieces": [],
+        "answer_check": "",
+        "source_slide_numbers": [
+          3,
+          4,
+          5
+        ],
+        "image_source_slide": 3,
+        "image_caption": "",
+        "premium_layout": "",
+        "premium_title": "",
+        "premium_text": "",
+        "premium_items": [],
+        "premium_table": [],
+        "partner_prompt": "",
+        "discussion_questions": [],
+        "context_anchor": "",
+        "practice_phase": "",
+        "flagship_activity_mode": "embedded_section",
+        "flagship_activity": {},
+        "template_role": "vocabulary_table",
+        "template_family": "esol_exact_workbook",
+        "reference_flow_title": "Solve Path Reference Tool",
+        "reference_flow_lines": [
+          "Name the measurements or labels you know.",
+          "Choose the model or formula that fits the figure.",
+          "Substitute, solve, label the answer, and explain what it means."
+        ],
+        "source_problem_cards": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ]
+      },
+      {
+        "kind": "worked_example",
+        "section": "Guided Problem",
+        "title": "Guided Problem",
+        "subtitle": "Model the area problem, then solve a similar one.",
+        "primary_text": "How can you determine the area of the octagon using the triangles?",
+        "secondary_text": "",
+        "bullets": [
+          "Stop Sign"
+        ],
+        "tasks": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "response_prompt": "Explain how the formula fits the problem.",
+        "sentence_starters": [],
+        "vocabulary": [],
+        "activity_name": "equation builder",
+        "activity_family": "build_construct",
+        "activity_instructions": "Build the formula path before you solve.",
+        "movable_pieces": [
+          "Read the problem",
+          "Write the formula",
+          "Use the values",
+          "Label the answer"
+        ],
+        "answer_check": "A strong solve path matches the formula and the final answer.",
+        "source_slide_numbers": [
+          3,
+          4,
+          5
+        ],
+        "image_source_slide": 3,
+        "image_caption": "",
+        "premium_layout": "",
+        "premium_title": "",
+        "premium_text": "",
+        "premium_items": [],
+        "premium_table": [],
+        "partner_prompt": "Explain the setup to a partner before either of you writes the final answer.",
+        "discussion_questions": [
+          "Which clue tells you the first step?",
+          "How does the area formula or area model show the setup works?"
+        ],
+        "context_anchor": "Stop Sign",
+        "practice_phase": "",
+        "flagship_activity_mode": "embedded_section",
+        "flagship_activity": {},
+        "template_role": "guided_practice",
+        "template_family": "esol_exact_workbook",
+        "source_problem_cards": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "context_hook": "Use the stop sign context.",
+        "formula_label": "Formula (S1)",
+        "formula_text": "A = n x (b x h) / 2",
+        "guided_table": [
+          [
+            "Base",
+            "Height",
+            "# Triangles",
+            "Area"
+          ],
+          [
+            "9",
+            "18",
+            "8",
+            "___"
+          ],
+          [
+            "11",
+            "22",
+            "10",
+            "___"
+          ],
+          [
+            "11",
+            "22",
+            "10",
+            "___"
+          ]
+        ],
+        "guided_steps": [
+          "1. Write the formula: ___.",
+          "2. Add the values: ___.",
+          "3. Solve and label: ___."
+        ],
+        "twr_frames": [
+          "Think: The important measurement is ___.",
+          "Write: The formula or model is ___.",
+          "Reason: The answer makes sense because ___."
+        ]
+      },
+      {
+        "kind": "practice",
+        "section": "Interactive Activity",
+        "title": "Interactive Activity",
+        "subtitle": "Solve the area problem, then solve a similar one.",
+        "primary_text": "How can you determine the area of the octagon using the triangles?",
+        "secondary_text": "",
+        "bullets": [],
+        "tasks": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "response_prompt": "How are the two solve paths alike or different?",
+        "sentence_starters": [
+          "Both setups use ___.",
+          "One difference is ___.",
+          "The labeled diagram shows ___."
+        ],
+        "vocabulary": [],
+        "activity_name": "area problem solve builder",
+        "activity_family": "build_construct",
+        "activity_instructions": "Move the cards into a strong solve plan",
+        "movable_pieces": [
+          "What do I know?",
+          "What do I need?",
+          "Set up the math",
+          "Check the answer"
+        ],
+        "answer_check": "Your completed plan should help you solve the problem and explain why the answer makes",
+        "source_slide_numbers": [
+          3,
+          4,
+          5
+        ],
+        "image_source_slide": 3,
+        "image_caption": "",
+        "premium_layout": "",
+        "premium_title": "",
+        "premium_text": "",
+        "premium_items": [],
+        "premium_table": [],
+        "partner_prompt": "Solve your assigned problem first. Then compare what stayed the same, what changed, and which explanation",
+        "discussion_questions": [
+          "What stays the same in both problems?",
+          "What changes, and how does that change your setup?"
+        ],
+        "context_anchor": "Stop Sign",
+        "practice_phase": "",
+        "flagship_activity_mode": "embedded_section",
+        "flagship_activity": {},
+        "template_role": "interactive_activity",
+        "template_family": "esol_exact_workbook",
+        "source_problem_cards": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "interactive_render_role": "two_column_compare",
+        "partner_a_problem": "Why is the height of one triangle 18 inches?",
+        "partner_b_problem": "How can you decompose the octagon into shapes that you can find the area of?",
+        "compare_frame": "The setup is alike because ___. It changes because ___."
+      },
+      {
+        "kind": "practice",
+        "section": "Interactive Review",
+        "title": "Best-Fit Interactive Review",
+        "subtitle": "Solve the area problem, then solve a similar one.",
+        "primary_text": "How can you determine the area of the octagon using the triangles?",
+        "secondary_text": "",
+        "bullets": [],
+        "tasks": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "response_prompt": "What should your partner notice first in the labeled diagram?",
+        "sentence_starters": [
+          "Partner A noticed ___.",
+          "Partner B solved ___.",
+          "The diagram proves ___."
+        ],
+        "vocabulary": [],
+        "activity_name": "",
+        "activity_family": "",
+        "activity_instructions": "",
+        "movable_pieces": [],
+        "answer_check": "",
+        "source_slide_numbers": [
+          3,
+          4,
+          5
+        ],
+        "image_source_slide": 3,
+        "image_caption": "",
+        "premium_layout": "",
+        "premium_title": "",
+        "premium_text": "",
+        "premium_items": [],
+        "premium_table": [],
+        "partner_prompt": "Solve your assigned problem first. Then compare what stayed the same, what changed, and which explanation",
+        "discussion_questions": [
+          "What stays the same in both problems?",
+          "Which label or measurement changes your setup?",
+          "What changes, and how does that change your setup?"
+        ],
+        "context_anchor": "Stop Sign",
+        "practice_phase": "",
+        "flagship_activity_mode": "embedded_section",
+        "flagship_activity": {},
+        "template_role": "best_fit_review",
+        "template_family": "esol_exact_workbook",
+        "source_problem_cards": [
+          "How can you determine the area of the octagon using the triangles?",
+          "Why is the height of one triangle 18 inches?",
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "review_render_role": "collaborative_practice",
+        "partner_a_problem": "Why is the height of one triangle 18 inches?",
+        "partner_b_problem": "How can you decompose the octagon into shapes that you can find the area of?"
+      }
+    ],
+    "template_family": "esol_exact_workbook",
+    "context_anchor": "Stop Sign",
+    "flagship_activity_requested_target": 0,
+    "flagship_activity_target": 0,
+    "flagship_activity_support_score": 0,
+    "flagship_activity_fallbacks": [
+      "kept the notebook intentionally compact so students move into the book after the first problem arc"
+    ],
+    "flagship_activities": [],
+    "premium_features": []
+  }
+}

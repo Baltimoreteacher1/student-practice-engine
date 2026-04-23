@@ -15,3 +15,9 @@ Canonical verification:
 ```bash
 python3 ../validation-tools/src/verify_lesson_plan_engine.py
 ```
+
+Deterministic gold-standard benchmark:
+
+```bash
+python3 ../validation-tools/src/benchmark_lesson_plan_quality.py
+```

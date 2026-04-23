@@ -9,6 +9,9 @@
 ## Next
 
 - [x] Promote at least one scrubbed source deck and one approved output into `examples/` and `gold-standards/`.
+- [x] Lock the compact lesson-plan reference contract to the approved DOCX structure and keep the benchmark aligned with it.
+- [x] Restore the approved SPED initials line and end-of-plan accommodations matrix to the locked reference bundle.
+- [x] Lock row-level SPED initials plus source-grounded small-group lesson moves into the compact procedures contract.
 - [x] Consolidate lesson-plan logs and validation notes into `logs/`.
 - [x] Document any launcher or automation dependencies that must stay stable.
 - [x] Remove or archive legacy generated artifacts that still live under `../codex-lesson-plan-generator/output/`.

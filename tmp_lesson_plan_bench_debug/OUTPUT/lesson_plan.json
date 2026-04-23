@@ -1,0 +1,461 @@
+{
+  "date": "2026-04-21",
+  "lesson_type": "direct_instruction",
+  "source_deck": {
+    "source_file": "codex-lesson-plan-generator/examples/sample_input_slides.pptx",
+    "source_filename": "sample_input_slides.pptx",
+    "deck_title": "Determine Area of Triangles Lesson launch",
+    "lesson_topic": "Determine Area of Triangles Lesson launch",
+    "selected_session_numbers": [
+      1
+    ]
+  },
+  "sessions": [
+    {
+      "session_label": "Session 1",
+      "session_number": 1,
+      "output_filename": "lesson_plan.docx",
+      "lesson_information": {
+        "date": "2026-04-21",
+        "lesson_title": "Determine Area of Triangles Lesson launch",
+        "session_number": 1,
+        "session_label": "Session 1",
+        "course_or_grade": "Grade 6 Mathematics",
+        "estimated_duration_minutes": 55,
+        "lesson_type": "direct_instruction",
+        "source_slide_numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "standards_and_learning_targets": {
+        "standards": [
+          "6.G.A.1"
+        ],
+        "standards_status": "",
+        "standards_source": {
+          "slide_numbers": [
+            3
+          ],
+          "source_lines": [
+            "Standard: 6.G.A.1"
+          ]
+        },
+        "learning_targets": [
+          "I can determine the area of a triangle using a related rectangle or parallelogram."
+        ],
+        "i_can_statements": [
+          "I can determine the area of a triangle using a related rectangle or parallelogram."
+        ]
+      },
+      "lesson_objective_and_student_success_criteria": {
+        "lesson_objective": "determine the area of a triangle using a related rectangle or parallelogram.",
+        "student_success_criteria": [
+          "I can identify the base and height.",
+          "I can explain why the triangle area formula works.",
+          "I can solve a source problem and justify my strategy."
+        ]
+      },
+      "materials_and_preparation": {
+        "materials": [
+          "Teacher slide deck"
+        ],
+        "preparation_notes": [
+          "Queue the slide deck to Session 1 (slides 1-8).",
+          "Project the source visual(s) used in class: I can determine the area of a triangle using a related rectangle or parallelogram."
+        ],
+        "required_visuals": [
+          "I can determine the area of a triangle using a related rectangle or parallelogram.",
+          "I can identify the base and height.",
+          "I can explain why the triangle area formula works.",
+          "Rectangle area review",
+          "How does the rectangle help you reason about triangle area?",
+          "Triangle A has base 10 units and height 6 units. What is its area?",
+          "Which measurement is the height?",
+          "Find the area of Triangle B with base 12 units and height 9 units."
+        ]
+      },
+      "opening_warm_up_launch": {
+        "section_title": "Opening / Warm-Up / Launch",
+        "time_minutes": 10,
+        "focus_tasks": [
+          "Lesson launch",
+          "What shapes do you notice?",
+          "Estimate which shape has the greater area."
+        ],
+        "teacher_actions": [
+          "Launch the actual opening from slides 1, 2: What shapes do you notice?",
+          "Collect notice-wonder thinking before naming the mathematical focus of the lesson."
+        ],
+        "student_actions": [
+          "Complete the opening task and record an initial strategy, estimate, or observation.",
+          "Share one idea with a partner or the class using evidence from the source slide.",
+          "Respond to the notice-wonder prompt before transitioning into the main task."
+        ],
+        "evidence_of_learning": [
+          "Students refer to the actual figure, prompt, or question from the source deck when sharing their first idea."
+        ],
+        "misconceptions_to_monitor": [
+          "Watch for students choosing a slanted side instead of the perpendicular height.",
+          "Watch for missing square units or a formula applied to the wrong dimensions.",
+          "What misconception should we watch for?"
+        ],
+        "embedded_supports": [
+          "Offer sentence starters or a word bank while students explain their thinking.",
+          "Prompt students to rehearse an oral explanation with a partner before sharing aloud."
+        ],
+        "source_slide_numbers": [
+          1,
+          2
+        ],
+        "source_excerpt": "Lesson launch What shapes do you notice? Estimate which shape has the greater area."
+      },
+      "mini_lesson_modeling_concept_development": {
+        "section_title": "Mini-Lesson / Modeling / Concept Development",
+        "time_minutes": 18,
+        "focus_tasks": [
+          "Rectangle area review",
+          "How does the rectangle help you reason about triangle area?",
+          "I can identify the base and height.",
+          "I can explain why the triangle area formula works.",
+          "I can solve a source problem and justify my strategy."
+        ],
+        "teacher_actions": [
+          "Model the source sequence from slides 4: Rectangle area review",
+          "Press for the exact mathematical relationship named in the deck: I can identify the base and height."
+        ],
+        "student_actions": [
+          "Track the modeled reasoning and annotate the diagram, relationship, or formula shown in the source slides.",
+          "Explain how the source representation supports the strategy used in the lesson.",
+          "Respond to the reasoning prompt: I can identify the base and height."
+        ],
+        "evidence_of_learning": [
+          "Students use the same decomposition, composition, formula, or measurement language shown in the source deck."
+        ],
+        "misconceptions_to_monitor": [
+          "Watch for students choosing a slanted side instead of the perpendicular height.",
+          "Watch for missing square units or a formula applied to the wrong dimensions.",
+          "What misconception should we watch for?"
+        ],
+        "embedded_supports": [
+          "Keep the visual model or graphic organizer visible while students work through the task."
+        ],
+        "source_slide_numbers": [
+          4
+        ],
+        "source_excerpt": "Rectangle area review How does the rectangle help you reason about triangle area?"
+      },
+      "guided_practice_collaborative_learning": {
+        "section_title": "Guided Practice / Collaborative Learning",
+        "time_minutes": 10,
+        "focus_tasks": [
+          "Explain why doubling the triangle creates a parallelogram.",
+          "What misconception should we watch for?",
+          "Triangle A has base 10 units and height 6 units. What is its area?",
+          "Which measurement is the height?",
+          "A triangle has area 24 square units and height 6 units. What is the base?"
+        ],
+        "teacher_actions": [
+          "Coach the collaborative task from the source deck: Explain why doubling the triangle creates a parallelogram.",
+          "Pause for checks for understanding before students move into more independent work.",
+          "Use the source check question: What misconception should we watch for?"
+        ],
+        "student_actions": [
+          "Work with a partner or table group on the exact guided prompt from the slides.",
+          "Compare strategies and revise work when feedback or a classmate's idea changes the approach."
+        ],
+        "evidence_of_learning": [
+          "Students explain why the strategy works, not just what answer they got.",
+          "Students respond to the source discussion or check-for-understanding prompt using complete reasoning."
+        ],
+        "misconceptions_to_monitor": [
+          "Watch for students choosing a slanted side instead of the perpendicular height.",
+          "Watch for missing square units or a formula applied to the wrong dimensions.",
+          "What misconception should we watch for?"
+        ],
+        "embedded_supports": [
+          "Offer sentence starters or a word bank while students explain their thinking.",
+          "Keep the visual model or graphic organizer visible while students work through the task.",
+          "Use a brief small-group or low-distraction check-in for students who need extra processing time.",
+          "Prompt students to rehearse an oral explanation with a partner before sharing aloud."
+        ],
+        "source_slide_numbers": [
+          5
+        ],
+        "source_excerpt": "Triangle A has base 10 units and height 6 units. What is its area? Which measurement is the height?"
+      },
+      "independent_practice_application_stations": {
+        "section_title": "Independent Practice / Application / Stations",
+        "time_minutes": 10,
+        "focus_tasks": [
+          "Find the area of Triangle B with base 12 units and height 9 units.",
+          "Show your work and label units."
+        ],
+        "teacher_actions": [
+          "Assign the actual independent/application task: Find the area of Triangle B with base 12 units and height 9 units.",
+          "Circulate and confer while monitoring whether students can transfer the modeled reasoning independently."
+        ],
+        "student_actions": [
+          "Solve the source task independently and show all reasoning needed to justify the answer.",
+          "Label dimensions, units, or key relationships exactly as the lesson expects."
+        ],
+        "evidence_of_learning": [
+          "Students set up the problem correctly and maintain precision with labels and units."
+        ],
+        "misconceptions_to_monitor": [
+          "Watch for students choosing a slanted side instead of the perpendicular height.",
+          "Watch for missing square units or a formula applied to the wrong dimensions.",
+          "What misconception should we watch for?"
+        ],
+        "embedded_supports": [
+          "Keep the visual model or graphic organizer visible while students work through the task.",
+          "Use a brief small-group or low-distraction check-in for students who need extra processing time.",
+          "Point out the key words in the problem statement before independent work begins."
+        ],
+        "source_slide_numbers": [
+          6
+        ],
+        "source_excerpt": "Find the area of Triangle B with base 12 units and height 9 units. Show your work and label units."
+      },
+      "closure_exit_ticket_assessment": {
+        "section_title": "Closure / Exit Ticket / Assessment",
+        "time_minutes": 7,
+        "focus_tasks": [
+          "What misconception should we watch for?",
+          "Triangle A has base 10 units and height 6 units. What is its area?",
+          "Which measurement is the height?",
+          "A triangle has area 24 square units and height 6 units. What is the base?"
+        ],
+        "teacher_actions": [
+          "Use the session close from the source slides: What misconception should we watch for?",
+          "Listen for precise mathematical language before dismissing the class or assigning follow-up work."
+        ],
+        "student_actions": [
+          "Complete the closing check, summary, or exit-style prompt from the source deck.",
+          "Explain the strategy or conclusion using the lesson vocabulary."
+        ],
+        "evidence_of_learning": [
+          "Students independently show whether they can apply the session's mathematical focus without teacher prompting."
+        ],
+        "misconceptions_to_monitor": [
+          "Watch for students choosing a slanted side instead of the perpendicular height.",
+          "Watch for missing square units or a formula applied to the wrong dimensions.",
+          "What misconception should we watch for?"
+        ],
+        "embedded_supports": [
+          "Offer sentence starters or a word bank while students explain their thinking.",
+          "Prompt students to rehearse an oral explanation with a partner before sharing aloud."
+        ],
+        "source_slide_numbers": [
+          8
+        ],
+        "source_excerpt": "A triangle has area 24 square units and height 6 units. What is the base? Explain your reasoning."
+      },
+      "differentiation_sped_esol_supports_and_teacher_notes": {
+        "implementation_note": "Embed these concise supports during the named lesson phases while keeping the source task intact.",
+        "sped": [
+          {
+            "student": "Profile A",
+            "supports": [
+              "sentence starters",
+              "word banks",
+              "expressive language support"
+            ]
+          },
+          {
+            "student": "Profile G",
+            "supports": [
+              "simplified language",
+              "word banks",
+              "graphic organizers",
+              "calculator",
+              "small group"
+            ]
+          }
+        ],
+        "esol": [
+          "Preview student-friendly vocabulary definitions and point to the matching visuals during modeling.",
+          "Provide sentence starters for partner talk, discussion, and closure explanations.",
+          "Highlight key words in the task directions and repeat directions before independent work."
+        ],
+        "teacher_notes": [
+          "Monitor whether students name the base and perpendicular height precisely.",
+          "Monitor the source check prompt closely: What misconception should we watch for?"
+        ],
+        "precision_monitoring": [
+          "Monitor whether students name the base and perpendicular height precisely."
+        ]
+      },
+      "reference_render_context": {
+        "lesson_topic": "Determine Area of Triangles Lesson launch",
+        "be_curious_prompts": [
+          "What shapes do you notice?"
+        ],
+        "mindset_prompts": [],
+        "vocabulary_terms": [],
+        "worked_examples": [
+          {
+            "prompt": "How does the rectangle help you reason about triangle area?",
+            "reveal": "Rectangle area review",
+            "slide_numbers": [
+              4
+            ]
+          },
+          {
+            "prompt": "Triangle A has base 10 units and height 6 units. What is its area?",
+            "reveal": "",
+            "slide_numbers": [
+              5
+            ]
+          }
+        ],
+        "reveal_discussion_prompts": [
+          {
+            "prompt": "What misconception should we watch for?",
+            "reveal": "Explain why doubling the triangle creates a parallelogram.",
+            "slide_numbers": [
+              7
+            ]
+          },
+          {
+            "prompt": "A triangle has area 24 square units and height 6 units. What is the base?",
+            "reveal": "Explain your reasoning.",
+            "slide_numbers": [
+              8
+            ]
+          }
+        ],
+        "checks_for_understanding": [
+          "What misconception should we watch for?",
+          "Triangle A has base 10 units and height 6 units. What is its area?",
+          "Which measurement is the height?",
+          "A triangle has area 24 square units and height 6 units. What is the base?"
+        ],
+        "reasoning_tasks": [
+          "I can identify the base and height.",
+          "I can explain why the triangle area formula works.",
+          "I can solve a source problem and justify my strategy.",
+          "Triangle A has base 10 units and height 6 units. What is its area?",
+          "Which measurement is the height?",
+          "Find the area of Triangle B with base 12 units and height 9 units.",
+          "Explain why doubling the triangle creates a parallelogram.",
+          "A triangle has area 24 square units and height 6 units. What is the base?"
+        ],
+        "collaborative_tasks": [
+          "Explain why doubling the triangle creates a parallelogram.",
+          "What misconception should we watch for?"
+        ],
+        "guided_practice": [
+          "Triangle A has base 10 units and height 6 units. What is its area?",
+          "Which measurement is the height?"
+        ],
+        "independent_practice": [
+          "Find the area of Triangle B with base 12 units and height 9 units.",
+          "Show your work and label units."
+        ],
+        "lets_explore_more_tasks": [],
+        "apply_transfer_tasks": [],
+        "summary_closure_language": [],
+        "homework_follow_up_tasks": [],
+        "reveal_math_workbook_references": [],
+        "speaker_note_teaching_moves": []
+      }
+    }
+  ],
+  "appendix": [
+    {
+      "slide_number": 1,
+      "title": "Determine Area of Triangles",
+      "source_excerpt": "Determine Area of Triangles Lesson launch",
+      "used_in_sections": [
+        "Session 1: lesson_information",
+        "Session 1: opening_warm_up_launch"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    },
+    {
+      "slide_number": 2,
+      "title": "Do Now",
+      "source_excerpt": "Do Now What shapes do you notice? Estimate which shape has the greater area.",
+      "used_in_sections": [
+        "Session 1: lesson_information",
+        "Session 1: opening_warm_up_launch"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    },
+    {
+      "slide_number": 3,
+      "title": "Learning Target",
+      "source_excerpt": "Learning Target Standard: 6.G.A.1 I can determine the area of a triangle using a related rectangle or parallelogram. Success Criteria I can identify the base and height. I can explain why the triangle area formula works\u2026",
+      "used_in_sections": [
+        "Session 1: lesson_information",
+        "Session 1: standards_and_learning_targets"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    },
+    {
+      "slide_number": 4,
+      "title": "Model",
+      "source_excerpt": "Model Rectangle area review How does the rectangle help you reason about triangle area?",
+      "used_in_sections": [
+        "Session 1: lesson_information",
+        "Session 1: mini_lesson_modeling_concept_development"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    },
+    {
+      "slide_number": 5,
+      "title": "Guided Practice",
+      "source_excerpt": "Guided Practice Triangle A has base 10 units and height 6 units. What is its area? Which measurement is the height?",
+      "used_in_sections": [
+        "Session 1: lesson_information",
+        "Session 1: guided_practice_collaborative_learning"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    },
+    {
+      "slide_number": 6,
+      "title": "Independent Practice",
+      "source_excerpt": "Independent Practice Find the area of Triangle B with base 12 units and height 9 units. Show your work and label units.",
+      "used_in_sections": [
+        "Session 1: lesson_information",
+        "Session 1: independent_practice_application_stations"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    },
+    {
+      "slide_number": 7,
+      "title": "Discussion",
+      "source_excerpt": "Discussion Explain why doubling the triangle creates a parallelogram. What misconception should we watch for?",
+      "used_in_sections": [
+        "Session 1: lesson_information"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    },
+    {
+      "slide_number": 8,
+      "title": "Exit Ticket",
+      "source_excerpt": "Exit Ticket A triangle has area 24 square units and height 6 units. What is the base? Explain your reasoning.",
+      "used_in_sections": [
+        "Session 1: lesson_information",
+        "Session 1: closure_exit_ticket_assessment"
+      ],
+      "mapping_note": "Directly mapped to the listed session section(s)."
+    }
+  ],
+  "metadata": {
+    "grade": "6",
+    "subject": "Mathematics",
+    "agenda_used": false,
+    "requested_session_numbers": [],
+    "generated_docx_filenames": [
+      "lesson_plan.docx"
+    ]
+  }
+}

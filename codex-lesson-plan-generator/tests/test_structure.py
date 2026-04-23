@@ -13,7 +13,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from apply_supports import apply_supports  # noqa: E402
-from build_lesson_plan import SESSION_SECTION_KEYS, build_lesson_plan  # noqa: E402
+from build_lesson_plan import SESSION_SECTION_KEYS, build_lesson_objective, build_lesson_plan  # noqa: E402
 from lesson_extract import run_lesson_extract  # noqa: E402
 from validate_plan import build_validation_payload  # noqa: E402
 
@@ -27,6 +27,7 @@ def sample_config() -> dict:
     return {
         "lesson_duration_minutes": 55,
         "date_override": "2026-04-07",
+        "teacher_name": "Neft.Alba",
         "default_grade": "6",
         "default_subject": "Mathematics",
         "materials_defaults": ["Teacher slide deck"],
@@ -136,6 +137,29 @@ class StructureTests(unittest.TestCase):
         )
         self.assertFalse(payload["passed"])
         self.assertIn("Session 1: closure_exit_ticket_assessment", payload["missing_sections"])
+
+    def test_lesson_objective_prefers_best_matching_learning_target(self) -> None:
+        session_extract = {
+            "learning_targets": [
+                "I can find the area of a regular polygon by decomposing the figure into triangles.",
+                "I can make use of structure to find the area of a composite figure by decomposing the figure into other shapes.",
+            ],
+            "reasoning_tasks": [
+                "Use structure to decompose the composite figure into shapes with known area.",
+                "Explain how the irregular flag can be composed into a trapezoid.",
+            ],
+            "opening_source": {"lines": ["What do you notice about the trapezoid?"]},
+            "modeling_source": {"lines": ["The Ohio Burgee is an irregular shape. What is the area of the flag?"]},
+            "guided_practice": ["How can you use your prior knowledge of area to determine the area of the irregular shape?"],
+            "independent_practice": ["Find the area of the composite figure and explain your method."],
+            "checks_for_understanding": [],
+            "session_title": "Apply Area Concepts to Solve Problems",
+        }
+
+        self.assertEqual(
+            build_lesson_objective(session_extract),
+            "make use of structure to find the area of a composite figure by decomposing the figure into other shapes.",
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover

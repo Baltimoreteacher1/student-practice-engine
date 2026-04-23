@@ -47,6 +47,12 @@ Reason: the Apps Script sources are still preserved where they have been used. T
 
 Reason: validation already exists, but it is split between the lesson-plan repo, root notebook tests, and many preserved smoke folders. Treat `validation-tools/` as the consolidation target, not yet the sole runtime.
 
+## Root surface rule
+
+The workspace root is intentionally limited to active launchers, core runtimes, shared docs, and a small number of preserved outputs. Do not leave new one-off scripts at the root after a task is complete.
+
+Preserve local-only helpers in `shared-assets/archive/` unless they are being promoted into a canonical workflow area.
+
 ## Best daily workflow
 
 ### Debug code
@@ -127,3 +133,4 @@ Reason: validation already exists, but it is split between the lesson-plan repo,
 - Do not treat smoke folders as the source of truth.
 - Do not migrate working code into the canonical folders without documenting parity and verification.
 - Do not create duplicate notebook runtimes when the change belongs to either the local path or the hosted path.
+- Do not confuse preserved archive material in `shared-assets/archive/` with supported production tooling.

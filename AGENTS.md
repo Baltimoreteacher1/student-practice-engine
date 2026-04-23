@@ -1,111 +1,120 @@
 # AGENTS.md
 
-## Mission
+## Purpose
+This repository contains EduWonderLab workflows for generating lesson plans, student notebooks, and related classroom artifacts from source materials.
 
-Build reliable education workflow tooling that turns source lesson materials into production-ready classroom artifacts.
+Treat source files as the source of truth. Preserve instructional intent, sequencing, examples, vocabulary, and artifact fidelity unless explicitly asked to redesign.
 
-## Canonical workspace
+## Core operating rules
+- Prefer safe, minimal, high-confidence edits over broad rewrites.
+- Keep outputs final, production-ready, and immediately usable.
+- Preserve the existing workflow, folder structure, and pipeline architecture unless explicitly asked to change them.
+- Do not invent lesson content, examples, objectives, vocabulary, assessments, teacher moves, or student tasks not supported by source materials.
+- When ambiguity is minor, choose the highest-utility interpretation that best preserves source fidelity and workflow stability.
+- Repair before rebuilding when the current structure is substantially correct.
+- Inspect existing files and nearby scripts before making changes so edits match the repo’s current architecture.
 
-Use these folders first for new durable work:
+## Repository layout
+- `Lesson Plan Inbox/` = source files for lesson-plan generation
+- `Lesson Plan Output/` = final lesson-plan artifacts
+- `Notebook Inbox/` = source files for notebook generation
+- `Notebook Output/` = final notebook artifacts
+- `Notebook Archive/` = archived notebook artifacts
+- `Notebook Enhancement/` = enhancement prompts, helper files, upgrade assets
 
-- `lesson-plan-engine/`
-- `notebook-engine/`
-- `quiz-form-builder/`
-- `validation-tools/`
-- `shared-assets/`
+If additional workflow folders, scripts, templates, or validators exist, inspect them before editing.
 
-Existing implementations are preserved in place until they are intentionally migrated:
+## Default execution pattern
+For significant work, follow this sequence:
+extract -> map -> build -> audit -> repair -> final QA
 
-- `codex-lesson-plan-generator/`
-- `flagship-notebook-generator/`
-- root notebook scripts such as `notebook_engine.py`, `notebook_engine_app.py`, and `notebook_folder_runner.py`
-- legacy root artifacts, smoke runs, and one-off outputs
+For complex, high-risk, or multi-step work:
+1. make a short plan first
+2. inspect the relevant files before editing
+3. keep diffs scoped and targeted
+4. validate before claiming success
+5. summarize changes, risks, and validation clearly at the end
 
-## Working rules
+## Source fidelity rules
+- Preserve lesson intent, pacing logic, problem progression, and instructional sequence from source materials.
+- Preserve editable output formats whenever applicable.
+- Prefer source fidelity and usability over decorative improvement.
+- Match the established benchmark style when revising an existing artifact family.
+- Do not silently remove sections, objectives, vocabulary, examples, or activity structures unless clearly unsupported or explicitly requested.
+- Do not replace a working repo-specific pattern with a generic pattern unless the change is necessary to fix a real defect.
 
-- Inspect existing code and docs before changing workflow contracts.
-- Put new durable docs, specs, examples, and logs in the canonical folders above, not at workspace root.
-- Preserve source fidelity. Teacher slides, lesson text, and approved reference materials are the source of truth.
-- Prefer extending an existing engine over creating a duplicate pipeline.
-- For notebooks generated outside the primary engine, use `notebook-engine/enhancement/` as the polish lane instead of rebuilding the core generator.
-- Use `INBOX/`, `OUTPUT/`, and `ARCHIVE/` consistently.
-- Treat `gold-standards/` as locked references; copy from them, do not casually edit them.
-- Keep implementation code in `src/` or in an existing preserved engine until migration is deliberate.
-- Update `SPEC.md`, `TASKS.md`, and the relevant log when workflow behavior changes.
+## Editing and scope rules
+- Keep changes localized when possible.
+- Do not rename files, move folders, or change interfaces unless required for correctness or explicitly requested.
+- Do not delete existing artifacts, archives, or helper assets unless explicitly asked or clearly fixing a duplicate/broken output.
+- Preserve backward compatibility when working on shared scripts unless a breaking change is explicitly requested.
+- Prefer the smallest reliable fix over the most ambitious rewrite.
 
-## Notebook Premium Quality Standard
+## Code and automation rules
+- Check platform and API correctness before finalizing code.
+- Keep code paste-ready, syntax-safe, and consistent with the existing codebase.
+- Avoid unsupported, brittle, or speculative API calls.
+- Prefer targeted fixes unless a rebuild is clearly safer and more reliable.
+- If a script depends on folders, files, triggers, libraries, services, environment variables, or manual setup, state that clearly.
+- If tests, lint, build, or validation scripts already exist, use them instead of guessing.
 
-This is a hard quality contract for every notebook-generation or notebook-enhancement task.
+### Google Apps Script host rules
+When writing or editing Apps Script, verify the correct host/service:
+- `FormsApp` for Google Forms
+- `SpreadsheetApp` for Google Sheets
+- `DocumentApp` for Google Docs
+- `SlidesApp` for Google Slides
+- `DriveApp` for Drive operations
 
-Every notebook must be:
+If the requested script would fail in the wrong Apps Script environment, warn clearly before finalizing.
 
-- source-faithful
-- lesson-adapted
-- fully editable
-- visually cohesive
-- student-usable
-- cleanly formatted
-- publication-ready
+## Artifact quality rules
 
-Treat the output as failed and in need of repair if it includes generic filler activities, placeholder wording, bland or repetitive layouts, weak visual hierarchy, crowded text, tiny font, poor spacing, inconsistent alignment, style drift, decorative clutter, lesson-untethered activities, generic supports, template-generated pages, or technically correct but visually underdeveloped slides.
+### Lesson plans
+- Keep them teacher-facing, practical, polished, and ready to teach from.
+- Preserve lesson flow, objective alignment, examples, checks for understanding, and exit task logic.
+- Keep vocabulary, activities, and assessment aligned to the source lesson.
+- Avoid vague filler language; keep directions and teacher moves concrete and usable.
 
-Quality priority order:
+### Student notebooks
+- Keep them editable, readable, visually clean, and instructionally aligned.
+- Maintain strong hierarchy, adequate spacing, consistent formatting, and student-friendly readability.
+- Preserve source problems and information while improving clarity and polish.
+- Avoid overcrowding, tiny text, inconsistent slide logic, and decorative elements that reduce usability.
 
+## Validation and definition of done
+Before finishing:
+- check for placeholder text
+- check for missing sections or dangling references
+- check for broken formatting or layout issues
+- check for source-fidelity drift
+- check internal consistency across titles, objectives, vocabulary, examples, directions, and activity names
+- check for obvious runtime risks in code or automation files
+- run existing tests, lint, build, or validation commands when they exist
+- if no formal checks exist, perform a concise manual validation pass and state exactly what was checked
+- do not claim success without stating what was verified
+
+## Preferred final response shape
+For meaningful work, end with:
+- what changed
+- key risks or assumptions
+- what was validated
+- any required follow-up items for full reliability
+
+## Skills boundary
+Use `AGENTS.md` for durable repo behavior, constraints, and quality standards.
+
+When a workflow is specialized, repeatable, or multi-step, prefer a Skill rather than adding more bulk here. Examples include:
+- pipeline orchestration
+- Apps Script host validation
+- artifact fidelity auditing
+- benchmark polish passes
+- repo repair/debug workflows
+
+## Stability rule
+When in doubt, preserve:
 1. source fidelity
-2. instructional quality
-3. student usability
-4. visual quality
-5. editability
-6. premium finish
-
-Default notebook design standard:
-
-- larger readable text
-- strong hierarchy
-- balanced white space
-- clean alignment
-- restrained premium color usage
-- clear response zones
-- interactive-feeling layouts built with editable shapes, text, and tables
-
-Activity standard:
-
-- added activities must feel authored for the exact lesson
-- use real lesson vocabulary, representations, examples, misconceptions, and reasoning patterns
-- prefer fewer stronger activities over more weaker ones
-
-Writing standard:
-
-- notebook wording must read like polished human publishing copy
-- directions must be concise, clear, natural, and teachable
-- avoid robotic phrasing, vague prompts, and repetitive wording
-
-Required review pass before finalizing notebook work:
-
-- source fidelity
-- lesson adaptation
-- activity quality
-- vocabulary and support integration
-- visual hierarchy
-- layout discipline
-- typography and readability
-- editability
-- tone and wording
-- benchmark finish
-
-If any category is weak, repair it before finalizing.
-
-## Verification
-
-Before finalizing:
-
-1. Confirm the work landed in the right canonical area.
-2. Run the smallest relevant validation, test, or smoke path.
-3. Record blockers explicitly if verification cannot run.
-4. Summarize what changed, what was verified, and any remaining risk.
-
-## Output discipline
-
-- Production-ready outputs only.
-- Fail loudly on missing inputs or ambiguous source.
-- Preserve launcher and folder contracts when users rely on automation.
+2. editability
+3. working architecture
+4. validation honesty
+5. clear final reporting

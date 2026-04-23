@@ -4,8 +4,12 @@ from pathlib import Path
 from unittest.mock import patch
 
 from notebook_engine import (
+    apply_publisher_copyedit,
     build_rendered_quality_report,
+    build_responses_payload,
+    ensure_peer_discussion_support,
     enforce_plan_requirements,
+    notebook_plan_schema,
     render_plan,
     template_role_signature,
 )
@@ -16,6 +20,8 @@ from notebook_folder_runner import copy_job_outputs
 def sample_deck() -> dict:
     return {
         "lesson_title": "Determine the Volume of Rectangular Prisms",
+        "source_filename": "volume-prisms.pptx",
+        "slide_count": 5,
         "summary": "Students use dimensions and the volume formula to solve the first prism problem.",
         "keyword_candidates": ["volume", "rectangular prism", "dimensions"],
         "standards": ["6.G.A.2"],
@@ -79,6 +85,93 @@ def sample_deck() -> dict:
     }
 
 
+def regular_polygon_deck() -> dict:
+    return {
+        "lesson_title": "Apply Area Concepts to Solve Problems",
+        "source_filename": "lesson-5-4.pptx",
+        "slide_count": 7,
+        "summary": "Students find the area of a regular polygon by decomposing an octagon into congruent triangles.",
+        "keyword_candidates": ["area", "regular polygon", "octagon", "decompose"],
+        "standards": ["6.G.A.1"],
+        "slides": [
+            {
+                "slide_number": 1,
+                "title": "Session 1",
+                "text": "Session 1 Apply Area Concepts to Solve Problems",
+                "text_items": ["Session 1"],
+                "problem_texts": [],
+                "notes": "",
+                "image_count": 0,
+            },
+            {
+                "slide_number": 2,
+                "title": "Be Curious",
+                "text": "Why does confidence in yourself and your abilities help you be successful in math?",
+                "text_items": [
+                    "What do you notice? What do you wonder?",
+                    "Why does confidence in yourself and your abilities help you be successful in math?",
+                ],
+                "problem_texts": ["Why does confidence in yourself and your abilities help you be successful in math?"],
+                "notes": "",
+                "image_count": 1,
+            },
+            {
+                "slide_number": 3,
+                "title": "Stop Sign",
+                "text": "How can you decompose the octagon into shapes that you can find the area of?",
+                "text_items": ["How can you decompose the octagon into shapes that you can find the area of?"],
+                "problem_texts": ["How can you decompose the octagon into shapes that you can find the area of?"],
+                "notes": "",
+                "image_count": 1,
+            },
+            {
+                "slide_number": 4,
+                "title": "Stop Sign",
+                "text": "Let's decompose the octagon into 8 congruent triangles. Because each side has the same length, the octagon is a regular polygon. You can decompose a regular polygon into triangles to determine the area.",
+                "text_items": [
+                    "Let's decompose the octagon into 8 congruent triangles. Because each side has the same length, the octagon is a regular polygon. You can decompose a regular polygon into triangles to determine the area."
+                ],
+                "problem_texts": ["Why is the height of one triangle 18 inches?"],
+                "notes": "",
+                "image_count": 1,
+            },
+            {
+                "slide_number": 5,
+                "title": "Stop Sign",
+                "text": "The octagon can be decomposed into 8 congruent triangles. Each side is the base of a triangle. How can you determine the area of the octagon using the triangles?",
+                "text_items": [
+                    "The octagon can be decomposed into 8 congruent triangles.",
+                    "Each side is the base of a triangle.",
+                ],
+                "problem_texts": ["How can you determine the area of the octagon using the triangles?"],
+                "notes": "",
+                "image_count": 1,
+            },
+            {
+                "slide_number": 6,
+                "title": "Learning Targets",
+                "text": "I can find the area of a regular polygon by decomposing the figure into triangles. I can make use of structure to find the area of a composite figure by decomposing the figure into other shapes.",
+                "text_items": [
+                    "I can find the area of a regular polygon by decomposing the figure into triangles.",
+                    "I can make use of structure to find the area of a composite figure by decomposing the figure into other shapes.",
+                ],
+                "problem_texts": [],
+                "notes": "",
+                "image_count": 0,
+            },
+            {
+                "slide_number": 7,
+                "title": "Session 2",
+                "text": "Session 2 Apply Area Concepts to Solve Problems",
+                "text_items": ["Session 2"],
+                "problem_texts": [],
+                "notes": "",
+                "image_count": 0,
+            },
+        ],
+    }
+
+
 def minimal_plan() -> dict:
     return {
         "lesson_title": "Determine the Volume of Rectangular Prisms",
@@ -94,7 +187,64 @@ def minimal_plan() -> dict:
     }
 
 
+def regular_polygon_plan() -> dict:
+    return {
+        "lesson_title": "Apply Area Concepts to Solve Problems",
+        "subject": "Math",
+        "grade_level": "6",
+        "standards": ["6.G.A.1"],
+        "topic_summary": "Use decomposition and congruent triangles to find the area of a regular polygon.",
+        "session_1": {
+            "session_title": "Session 1 Student Notebook",
+            "session_subtitle": "",
+            "slides": [],
+        },
+    }
+
+
 class NotebookSession1PivotTests(unittest.TestCase):
+    def test_session1_schema_matches_openai_required_key_rule(self) -> None:
+        schema = notebook_plan_schema()
+
+        self.assertEqual(set(schema["properties"].keys()), set(schema["required"]))
+        self.assertIn("session_1", schema["properties"])
+        self.assertNotIn("session_2", schema["properties"])
+
+    def test_responses_payload_uses_session1_only_schema(self) -> None:
+        payload = build_responses_payload(sample_deck(), model="gpt-5.4-mini", prompt_images=[])
+        schema = payload["text"]["format"]["schema"]
+
+        self.assertEqual(payload["text"]["format"]["name"], "session1_notebook_plan")
+        self.assertEqual(set(schema["properties"].keys()), set(schema["required"]))
+        self.assertNotIn("session_2", schema["properties"])
+
+    def test_interactive_activity_regains_discussion_support_after_copyedit_pass(self) -> None:
+        plan = enforce_plan_requirements(minimal_plan(), sample_deck())
+        interactive_slide = plan["session_1"]["slides"][4]
+
+        interactive_slide["discussion_questions"] = []
+        interactive_slide["partner_prompt"] = ""
+
+        repaired = apply_publisher_copyedit(plan, sample_deck())
+        ensure_peer_discussion_support(repaired["session_1"]["slides"][4])
+
+        questions = repaired["session_1"]["slides"][4]["discussion_questions"]
+        self.assertGreaterEqual(len(questions), 2)
+        self.assertTrue(all(question.endswith("?") for question in questions[:2]))
+        self.assertTrue(repaired["session_1"]["slides"][4]["partner_prompt"])
+
+    def test_exact_template_prefers_source_math_vocabulary_over_launch_words(self) -> None:
+        plan = enforce_plan_requirements(regular_polygon_plan(), regular_polygon_deck())
+
+        slides = plan["session_1"]["slides"]
+        self.assertIn("regular polygon", slides[0]["primary_text"].lower())
+        self.assertNotIn(2, slides[1]["source_slide_numbers"])
+
+        vocab_words = {item["word"].lower() for item in slides[2]["vocabulary"]}
+        self.assertIn("regular polygon", vocab_words)
+        self.assertNotIn("confidence", vocab_words)
+        self.assertNotIn("yourself", vocab_words)
+
     def test_enforce_plan_requirements_builds_six_slide_session1_only_plan(self) -> None:
         plan = enforce_plan_requirements(minimal_plan(), sample_deck())
 

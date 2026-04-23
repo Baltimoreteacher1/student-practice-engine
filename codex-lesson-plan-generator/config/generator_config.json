@@ -1,6 +1,7 @@
 {
   "lesson_duration_minutes": 55,
   "date_override": "",
+  "teacher_name": "Neft.Alba",
   "input": {
     "slides_dir": "../lesson-plan-engine/INBOX",
     "agenda_dir": "../lesson-plan-engine/INBOX/agenda",
@@ -21,10 +22,78 @@
     "markdown": "templates/lesson_plan_template.md",
     "docx": "templates/lesson_plan_template.docx"
   },
-  "active_student_supports": [
-    "Profile A",
-    "Profile G"
+  "student_support_assignments": [
+    {
+      "label": "M.E.",
+      "profile": "Profile A",
+      "supports": [
+        "oral responses",
+        "sentence starters",
+        "scribed exit if needed"
+      ],
+      "matrix_supports": "Oral responses, sentence starters, scribed exit if needed"
+    },
+    {
+      "label": "S.D.L.P.",
+      "profile": "Profile F",
+      "supports": [
+        "read aloud all text and questions"
+      ],
+      "matrix_supports": "Read aloud all text and questions"
+    },
+    {
+      "label": "R.B.",
+      "profile": "Profile C",
+      "supports": [
+        "extended time",
+        "fidget tool",
+        "movement breaks"
+      ],
+      "matrix_supports": "Extended time, fidget tool, movement breaks"
+    },
+    {
+      "label": "A.M.M.",
+      "profile": "Profile G",
+      "supports": [
+        "calculator",
+        "forced choice options",
+        "extended time"
+      ],
+      "matrix_supports": "Calculator, forced choice options, extended time"
+    },
+    {
+      "label": "R.M.G.",
+      "profile": "Profile E",
+      "supports": [
+        "pre-circled/highlighted options",
+        "forced choice",
+        "pre-drawn number lines"
+      ],
+      "matrix_supports": "Pre-circled/highlighted options, forced choice, pre-drawn number lines"
+    },
+    {
+      "label": "J.C.",
+      "profile": "Profile A",
+      "supports": [
+        "sentence starters",
+        "para support",
+        "movement breaks",
+        "oral options"
+      ],
+      "matrix_supports": "Sentence starters, para support, movement breaks, oral options"
+    },
+    {
+      "label": "J.L.",
+      "profile": "Profile C",
+      "supports": [
+        "movement breaks",
+        "extended time",
+        "para check-in"
+      ],
+      "matrix_supports": "Movement breaks, extended time, para check-in"
+    }
   ],
+  "active_student_supports": [],
   "enable_esol_supports": true,
   "esol_support_limit": 3
 }

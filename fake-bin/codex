@@ -1,0 +1,12 @@
+#!/bin/zsh
+set -euo pipefail
+prompt="${@: -1}"
+notebook_path=$(printf '%s' "$prompt" | sed -n 's/^- Create a polished student notebook slide deck at //p' | head -n 1)
+html_path=$(printf '%s' "$prompt" | sed -n 's/^- Create a premium single-file HTML lesson experience at //p' | head -n 1)
+publish_rel=$(printf '%s' "$prompt" | sed -n 's/^- Publish the HTML lesson with: npm run publish:notebook -- //p' | head -n 1 | awk '{print $1}')
+publish_date=$(printf '%s' "$prompt" | sed -n 's/^- Publish the HTML lesson with: npm run publish:notebook -- //p' | head -n 1 | awk '{print $2}')
+mkdir -p "$(dirname "$notebook_path")" "$(dirname "$html_path")"
+printf 'fake pptx content' > "$notebook_path"
+printf '<!doctype html><html><body><h1>Generated HTML</h1></body></html>' > "$html_path"
+node scripts/publish-notebook.mjs "$publish_rel" "$publish_date" >/dev/null
+exit 0

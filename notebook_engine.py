@@ -297,12 +297,15 @@ STUDENT_FRIENDLY_DEFINITIONS = {
     "percent": "how many out of every one hundred",
     "percentage": "how many out of every one hundred",
     "percentages": "amounts written out of every one hundred",
+    "octagon": "an eight-sided polygon",
     "regular": "having equal sides and equal angles",
     "regular polygon": "a polygon with equal sides and equal angles",
     "triangle": "a shape with three straight sides",
     "prism": "a solid shape with matching ends and flat faces",
     "rectangular prism": "a box-shaped solid with rectangular faces",
     "congruent": "the same size and the same shape",
+    "congruent triangle": "a triangle that is the same size and the same shape as another triangle",
+    "congruent triangles": "triangles that are the same size and the same shape",
     "compose": "to put parts together to make a whole figure",
     "decompose": "to break a figure into smaller, known shapes",
     "dimension": "a measurement such as a length, width, or height",
@@ -346,6 +349,15 @@ SOURCE_TERM_PRIORITY = (
     "unit cube",
     "volume formula",
     "fractional edge lengths",
+    "regular polygon",
+    "octagon",
+    "congruent triangles",
+    "congruent triangle",
+    "decompose",
+    "compose",
+    "congruent",
+    "polygon",
+    "base",
     "dimensions",
     "dimension",
     "volume",
@@ -399,11 +411,20 @@ SPANISH_TRANSLATIONS = {
     "length": "longitud",
     "missing dimension": "dimension que falta",
     "multiply": "multiplicar",
+    "octagon": "octagono",
+    "polygon": "poligono",
     "prism": "prisma",
     "rectangular prism": "prisma rectangular",
+    "regular polygon": "poligono regular",
     "rhombus": "rombo",
     "solve": "resolver",
     "table": "tabla",
+    "triangle": "triangulo",
+    "congruent": "congruente",
+    "congruent triangle": "triangulo congruente",
+    "congruent triangles": "triangulos congruentes",
+    "compose": "componer",
+    "decompose": "descomponer",
     "unit": "unidad",
     "unit cube": "cubo unitario",
     "unit cubes": "cubos unitarios",
@@ -1341,6 +1362,8 @@ def text_tail_words(text: str, count: int) -> list[str]:
 def trim_dangling_display_text(value: str) -> str:
     cleaned = normalize_whitespace(value)
     had_ellipsis = cleaned.endswith("…")
+    if cleaned.endswith(("?", "!")) and not had_ellipsis:
+        return normalize_whitespace(cleaned.rstrip(" ,;:-"))
     cleaned = cleaned.rstrip("…").rstrip(" ,;:-")
     words = cleaned.split()
     if len(words) <= 2 and not had_ellipsis:
@@ -1370,6 +1393,8 @@ def trim_dangling_display_text(value: str) -> str:
 def has_dangling_display_text(value: str) -> bool:
     cleaned = normalize_whitespace(value)
     if not cleaned:
+        return False
+    if cleaned.endswith(("?", "!")):
         return False
     words = cleaned.rstrip("…").split()
     if len(words) <= 2 and not cleaned.endswith(("…", ",", ";", ":")):
@@ -2411,7 +2436,6 @@ def notebook_plan_schema() -> dict[str, Any]:
             "standards": {"type": "array", "items": {"type": "string"}},
             "topic_summary": {"type": "string"},
             "session_1": session_item,
-            "session_2": session_item,
         },
         "required": [
             "lesson_title",
@@ -3001,6 +3025,24 @@ def core_instructional_slides(slides: list[dict[str, Any]], limit: int = 8) -> l
     return ordered or slides[:limit]
 
 
+def instructional_focus_numbers(
+    deck: dict[str, Any],
+    candidate_numbers: list[int],
+    fallback_numbers: list[int],
+    *,
+    limit: int = 3,
+) -> list[int]:
+    for numbers in (candidate_numbers, fallback_numbers):
+        if not numbers:
+            continue
+        records = source_slides_from_numbers(deck, numbers)
+        filtered = [slide["slide_number"] for slide in records if source_slide_score(slide) > 0]
+        selected = filtered or [number for number in numbers if isinstance(number, int)]
+        if selected:
+            return selected[:limit]
+    return []
+
+
 def slide_title_list(slides: list[dict[str, Any]], limit: int = 4) -> list[str]:
     titles = [slide["title"] for slide in slides if slide["title"]]
     return unique_nonempty(titles, limit=limit)
@@ -3405,6 +3447,7 @@ def ensure_cover_slide(deck: dict[str, Any], session: dict[str, Any], plan_slide
 
 def derive_language_objective(deck: dict[str, Any], content_objective: str) -> str:
     lowered = normalize_whitespace(content_objective).lower()
+    shape_context = objective_shape_context(content_objective)
     if "volume" in lowered and ("rectangular prism" in lowered or "prism" in lowered):
         return "I can explain how the dimensions and formula show the volume of a rectangular prism using labels, units, and complete sentences."
     if "volume" in lowered:
@@ -3413,8 +3456,14 @@ def derive_language_objective(deck: dict[str, Any], content_objective: str) -> s
         return "I can explain how the net, dimensions, and units show the surface area using precise vocabulary and complete sentences."
     if "graph" in lowered or "table" in lowered or "equation" in lowered:
         return "I can explain how the table, graph, or equation show the same relationship using vocabulary and complete sentences."
+    if "regular polygon" in lowered or "octagon" in lowered:
+        return "I can explain how decomposing the regular polygon into congruent triangles helps me find the total area using labels, measurements, and complete sentences."
     if "decompos" in lowered or "compos" in lowered or "triangle" in lowered:
-        return "I can explain how I decomposed or composed the trapezoid using labels and area vocabulary."
+        if shape_context == "triangle":
+            return "I can explain how the base and height show the area of the triangle using labels, vocabulary, and complete sentences."
+        if shape_context == "composite figure":
+            return "I can explain how I decomposed the composite figure and why the parts show the total area using labels, vocabulary, and complete sentences."
+        return f"I can explain how I decomposed or composed the {shape_context} using labels, vocabulary, and complete sentences."
     if "formula" in lowered or "structure" in lowered or "rectangle" in lowered:
         return "I can explain how the model or formula shows the math idea using labels, vocabulary, and complete sentences."
     if "area" in lowered:
@@ -3422,8 +3471,23 @@ def derive_language_objective(deck: dict[str, Any], content_objective: str) -> s
     return f"I can explain my strategy for {lesson_focus_phrase(deck, content_objective)} using lesson vocabulary, labels, and complete sentences."
 
 
+def objective_shape_context(content_objective: str) -> str:
+    lowered = normalize_whitespace(content_objective).lower()
+    if "regular polygon" in lowered or "octagon" in lowered:
+        return "regular polygon"
+    if "composite figure" in lowered:
+        return "composite figure"
+    for shape in ("trapezoid", "triangle", "parallelogram", "rhombus", "rectangle"):
+        if shape in lowered:
+            return shape
+    if "figure" in lowered:
+        return "figure"
+    return "figure"
+
+
 def objective_success_criteria(content_objective: str, language_objective: str) -> list[str]:
     lowered = normalize_whitespace(content_objective).lower()
+    shape_context = objective_shape_context(content_objective)
     criteria: list[str] = []
     if "volume" in lowered and ("rectangular prism" in lowered or "prism" in lowered):
         criteria.append("I can identify the length, width, and height I need.")
@@ -3437,8 +3501,16 @@ def objective_success_criteria(content_objective: str, language_objective: str) 
     elif "graph" in lowered or "table" in lowered or "equation" in lowered:
         criteria.append("I can connect the representations to the same relationship.")
         criteria.append("I can use the correct values, labels, or features to support my explanation.")
-    if "decompos" in lowered or "compos" in lowered or "triangle" in lowered:
-        criteria.append("I can break apart or rearrange the trapezoid in a helpful way.")
+    if "regular polygon" in lowered or "octagon" in lowered:
+        criteria.append("I can connect the number of sides to the number of congruent triangles.")
+        criteria.append("I can find the area of one triangle and use it to find the total area.")
+    elif "decompos" in lowered or "compos" in lowered or "triangle" in lowered:
+        if shape_context == "triangle":
+            criteria.append("I can identify the base and height that show the area of the triangle.")
+        elif shape_context == "composite figure":
+            criteria.append("I can break apart the composite figure into helpful shapes.")
+        else:
+            criteria.append(f"I can break apart or rearrange the {shape_context} in a helpful way.")
     if "formula" in lowered or "structure" in lowered:
         criteria.append("I can connect the model to the formula or structure.")
     elif "rectangle" in lowered:
@@ -3453,6 +3525,7 @@ def objective_success_criteria(content_objective: str, language_objective: str) 
 
 def objective_sentence_frames(content_objective: str) -> list[str]:
     lowered = normalize_whitespace(content_objective).lower()
+    shape_context = objective_shape_context(content_objective)
     if "volume" in lowered and ("rectangular prism" in lowered or "prism" in lowered):
         return [
             "The dimensions that matter are ___.",
@@ -3477,9 +3550,16 @@ def objective_sentence_frames(content_objective: str) -> list[str]:
             "One feature that matters is ___.",
             "I can justify my answer by ___.",
         ]
-    if "decompos" in lowered or "compos" in lowered or "triangle" in lowered:
+    if "regular polygon" in lowered or "octagon" in lowered:
         return [
-            "I decomposed or composed the trapezoid by ___.",
+            "I decomposed the regular polygon into ___ congruent triangles.",
+            "The base and height of one triangle are ___ and ___.",
+            "I found the total area by ___.",
+        ]
+    if "decompos" in lowered or "compos" in lowered or "triangle" in lowered:
+        shape_phrase = "figure" if shape_context == "figure" else shape_context
+        return [
+            f"I decomposed or composed the {shape_phrase} by ___.",
             "The measurements that matter are ___ and ___.",
             "My strategy works because ___.",
         ]
@@ -3942,6 +4022,18 @@ def math_profile_for_text(text: str) -> dict[str, Any]:
             "shape_label": "Rhombus",
             "default_terms": ["area", "rhombus", "diagonal", "formula", "d1", "d2"],
         }
+    if "area" in lowered and any(term in lowered for term in ("regular polygon", "octagon")) and any(
+        term in lowered for term in ("decompose", "congruent triangle", "congruent triangles", "triangle")
+    ):
+        return {
+            "topic": "regular_polygon_area",
+            "formula": "A = n x (b x h) / 2",
+            "vars": ["base", "height", "triangles"],
+            "headers": ["Base", "Height", "# Triangles", "Area"],
+            "answer_label": "Area",
+            "shape_label": "Regular Polygon",
+            "default_terms": ["area", "regular polygon", "octagon", "decompose", "congruent triangles", "base", "height"],
+        }
     if "triangle" in lowered:
         return {
             "topic": "triangle_area",
@@ -4122,6 +4214,7 @@ def table_seed_values(profile: dict[str, Any], seed_slide: dict[str, Any]) -> li
     defaults = {
         "volume_prism": ["4", "3", "2"],
         "rhombus_area": ["10", "8"],
+        "regular_polygon_area": ["9", "18", "8"],
         "triangle_area": ["10", "6"],
         "trapezoid_area": ["8", "12", "5"],
         "parallelogram_area": ["8", "5"],
@@ -4158,6 +4251,8 @@ def compute_profile_result(profile: dict[str, Any], row: list[str]) -> str:
         result = numeric[0] * numeric[1] * numeric[2]
     elif topic == "rhombus_area" and len(numeric) >= 2:
         result = (numeric[0] * numeric[1]) / 2
+    elif topic == "regular_polygon_area" and len(numeric) >= 3:
+        result = ((numeric[0] * numeric[1]) / 2) * numeric[2]
     elif topic == "triangle_area" and len(numeric) >= 2:
         result = (numeric[0] * numeric[1]) / 2
     elif topic == "trapezoid_area" and len(numeric) >= 3:
@@ -4184,16 +4279,32 @@ def build_reference_table(profile: dict[str, Any], seed_slide: dict[str, Any], *
 def exact_content_objectives(deck: dict[str, Any], session_key: str, current_formula: str) -> list[str]:
     profile = session_math_profile(deck, session_key)
     topic = profile.get("topic", "")
+    source_objective = select_session_objective(deck, session_key)
+    lowered_source = normalize_whitespace(source_objective).lower()
     if topic == "volume_prism":
-        return ["I can find prism volume.", "I can use l, w, h."]
+        primary = source_objective if "volume" in lowered_source else "I can find the volume of a rectangular prism."
+        return [primary, "I can use the dimensions and the formula to justify the volume."]
     if topic == "rhombus_area":
-        return ["I can find rhombus area.", "I can use d1 and d2."]
+        primary = source_objective if "rhombus" in lowered_source else "I can find the area of a rhombus."
+        return [primary, "I can use d1 and d2 to justify the area."]
+    if topic == "regular_polygon_area":
+        primary = (
+            source_objective
+            if any(term in lowered_source for term in ("regular polygon", "octagon"))
+            else "I can find the area of a regular polygon by decomposing it into triangles."
+        )
+        return [primary, "I can connect each side of the polygon to one congruent triangle."]
     if topic == "triangle_area":
-        return ["I can find triangle area.", "I can use b and h."]
+        primary = source_objective if "triangle" in lowered_source else "I can find the area of a triangle."
+        return [primary, "I can use the base and height to justify the area."]
     if topic == "trapezoid_area":
-        return ["I can find trapezoid area.", "I can use both bases."]
+        primary = source_objective if "trapezoid" in lowered_source else "I can find the area of a trapezoid."
+        return [primary, "I can use both bases and the height to justify the area."]
     if "A =" in current_formula:
-        return ["I can find the area.", "I can use the formula."]
+        primary = source_objective if "area" in lowered_source else "I can find the area."
+        return [primary, "I can use the model or formula to justify the answer."]
+    if source_objective:
+        return [source_objective, "I can explain my strategy with labels, vocabulary, and evidence."]
     return ["I can solve the problem.", "I can explain my math."]
 
 
@@ -4203,6 +4314,8 @@ def spoken_language_frame(profile: dict[str, Any], current_formula: str) -> str:
         return "I say: 'I use ___ x ___ x ___.'"
     if topic == "rhombus_area":
         return "I say: 'I use ___ x ___, then half.'"
+    if topic == "regular_polygon_area":
+        return "I say: 'I find one triangle, then multiply by the number of triangles.'"
     if topic == "triangle_area":
         return "I say: 'I use base, height, then half.'"
     if "A =" in current_formula:
@@ -4222,6 +4335,8 @@ def exact_notice_lines(profile: dict[str, Any]) -> list[str]:
     topic = profile.get("topic", "")
     if topic == "volume_prism":
         return ["I see three dimensions.", "I see a prism model.", "I see the formula."]
+    if topic == "regular_polygon_area":
+        return ["I see a regular polygon.", "I see congruent triangles.", "I see labeled measures."]
     if "area" in topic:
         return ["I see labeled measures.", "I see a shape model.", "I see the formula."]
     return ["I see a table.", "I see a formula.", "I see labels."]
@@ -4230,6 +4345,8 @@ def exact_notice_lines(profile: dict[str, Any]) -> list[str]:
 def exact_wonder_prompt(profile: dict[str, Any]) -> str:
     if profile.get("topic") == "volume_prism":
         return "If one side changes, does volume change?"
+    if profile.get("topic") == "regular_polygon_area":
+        return "How does one triangle help us find the whole area?"
     if "area" in profile.get("topic", ""):
         return "If one measure changes, does area change?"
     return "If one value changes, what happens?"
@@ -8133,7 +8250,11 @@ def enforce_plan_requirements(
                 current_sources = source_slides_from_numbers(deck, slide.get("source_slide_numbers", []))
                 current_launch_score = sum(launch_source_score(record) for record in current_sources)
                 preferred_launch_score = sum(launch_source_score(record) for record in launch_source_records)
-                if launch_source_numbers and preferred_launch_score > current_launch_score:
+                if (
+                    launch_source_numbers
+                    and preferred_launch_score > current_launch_score
+                    and slide.get("template_family") != EXACT_ESOL_TEMPLATE_FAMILY
+                ):
                     slide["source_slide_numbers"] = launch_source_numbers
                     slide["image_source_slide"] = pick_launch_image_slide(launch_source_records)
                     slide["vocabulary"] = source_be_curious_vocabulary(deck, launch_source_numbers, limit=3)
@@ -8209,6 +8330,10 @@ def enforce_plan_requirements(
         ensure_unique_activity_names(session.get("slides", []), deck=deck, library=library)
 
     plan = apply_publisher_copyedit(plan, deck)
+    for session_key in planned_session_keys(plan):
+        session = plan.get(session_key, {})
+        for slide in session.get("slides", []):
+            ensure_peer_discussion_support(slide)
     return validate_plan(plan, deck=deck)
 
 
@@ -8665,6 +8790,7 @@ def build_exact_esol_workbook_session(
             for slide in (core[1:4] or session_sources[1:4] or session_sources[:3])
             if slide.get("slide_number")
         ]
+    problem_numbers = instructional_focus_numbers(deck, problem_numbers, seed_numbers)
     problem_records = source_slides_from_numbers(deck, problem_numbers or seed_numbers)
     session_label = session_label_for_key(session_key)
     session_number = session_number_value(session_key)
@@ -8672,10 +8798,15 @@ def build_exact_esol_workbook_session(
     context_anchor = best_session_context_anchor(deck, session_key)
     profile = session_math_profile(deck, session_key)
     current_formula = formula_for_session(deck, session_key) or profile.get("formula", "")
+    source_numbers = instructional_focus_numbers(deck, problem_numbers or seed_numbers, seed_numbers)
+    focus_records = source_slides_from_numbers(deck, source_numbers)
+    focus_image_source = pick_first_image_slide(focus_records) or pick_first_image_slide(
+        source_slides_from_numbers(deck, launch_numbers or seed_numbers)
+    )
     objective_rows = exact_content_objectives(deck, session_key, current_formula)
     language_objective = derive_language_objective(deck, objective_rows[0])
     spoken_frame = spoken_language_frame(profile, current_formula)
-    vocab_items = session_esol_vocabulary(deck, launch_numbers or seed_numbers, limit=6)
+    vocab_items = session_esol_vocabulary(deck, source_numbers, limit=6)
     guided_seed = source_seed_slide(deck, problem_numbers or seed_numbers, kind="worked_example")
     guided_problem = source_problem_statement(guided_seed)
     first_problem_cards = source_problem_candidates(problem_records, limit=4)
@@ -8697,7 +8828,6 @@ def build_exact_esol_workbook_session(
         ),
     )
     reference_flow_title, reference_flow_lines = exact_reference_flow_payload(lesson_mode)
-    source_numbers = problem_numbers or seed_numbers
 
     learning_slide = with_template_metadata(
         build_slide_plan(
@@ -8725,8 +8855,8 @@ def build_exact_esol_workbook_session(
             primary_text="👁 Notice: ___.",
             secondary_text="🤔 Wonder: ___.",
             response_prompt="What clue might help with the first problem?",
-            source_slide_numbers=launch_numbers or problem_numbers or seed_numbers,
-            image_source_slide=pick_first_image_slide(source_slides_from_numbers(deck, launch_numbers or problem_numbers or seed_numbers)),
+            source_slide_numbers=source_numbers,
+            image_source_slide=focus_image_source,
             **named_template_activity_payload(
                 name="notice and wonder reveal",
                 family="reveal_discuss",
@@ -8743,7 +8873,7 @@ def build_exact_esol_workbook_session(
     curious_slide["prior_formula"] = current_formula
     curious_slide["notice_lines"] = exact_notice_lines(profile)
     curious_slide["wonder_prompt"] = exact_wonder_prompt(profile)
-    curious_slide["word_help"] = word_help_strip(deck, launch_numbers or problem_numbers or seed_numbers, limit=5)
+    curious_slide["word_help"] = word_help_strip(deck, source_numbers, limit=5)
 
     vocabulary_slide = with_template_metadata(
         build_slide_plan(
@@ -8752,8 +8882,8 @@ def build_exact_esol_workbook_session(
             title="Vocabulary + Reference Tool",
             subtitle="Keep the lesson words and the solve-reference tool visible while you work.",
             primary_text="Match each word to a definition, example, and visual clue from the lesson.",
-            source_slide_numbers=launch_numbers or seed_numbers,
-            image_source_slide=pick_first_image_slide(source_slides_from_numbers(deck, launch_numbers or seed_numbers)),
+            source_slide_numbers=source_numbers,
+            image_source_slide=focus_image_source,
         ),
         "vocabulary_table",
     )
@@ -8777,7 +8907,7 @@ def build_exact_esol_workbook_session(
             "2. Collect two evidence points: ___.",
             "3. Write and justify your claim: ___.",
         ]
-        worked_example_label = f"📊 Evidence Focus (S{session_number})"
+        worked_example_label = f"Evidence Focus (S{session_number})"
         worked_example_text = "Use source data, trend language, and evidence to justify your claim."
         guided_practice_activity = named_template_activity_payload(
             name="reasoning pathway",
@@ -8807,7 +8937,7 @@ def build_exact_esol_workbook_session(
             "2. Add the values: ___.",
             "3. Solve and label: ___.",
         ]
-        worked_example_label = f"📐 Formula (S{session_number})"
+        worked_example_label = f"Formula (S{session_number})"
         worked_example_text = current_formula or profile.get("formula", "")
         guided_practice_activity = named_template_activity_payload(
             name="equation builder",
@@ -11268,11 +11398,15 @@ def is_specific_discussion_question(text: str) -> bool:
         "setup",
         "equation",
         "formula",
+        "representation",
+        "representations",
         "table",
         "graph",
         "dot plot",
         "median",
         "mean",
+        "measurement",
+        "measurements",
         "dimension",
         "dimensions",
         "area",
@@ -11315,7 +11449,7 @@ def discussion_focus_terms_for_slide(plan_slide: dict[str, Any]) -> tuple[str, s
         return ("equivalent representations", "fraction-decimal-percent relationship")
     if topic == "volume_prism":
         return ("dimensions from the prism model", "volume formula and units")
-    if topic in {"rectangle_area", "parallelogram_area", "triangle_area", "trapezoid_area", "rhombus_area"}:
+    if topic in {"rectangle_area", "parallelogram_area", "triangle_area", "trapezoid_area", "rhombus_area", "regular_polygon_area"}:
         return ("measurements in the figure", "area formula or area model")
     if "graph" in lowered:
         return ("feature of the graph", "graph evidence")
@@ -11382,7 +11516,7 @@ def generated_discussion_questions(plan_slide: dict[str, Any]) -> list[str]:
             "Which dimensions matter first, and why?",
             "How do the formula and units prove your answer?",
         ]
-    elif topic in {"rectangle_area", "parallelogram_area", "triangle_area", "trapezoid_area", "rhombus_area"}:
+    elif topic in {"rectangle_area", "parallelogram_area", "triangle_area", "trapezoid_area", "rhombus_area", "regular_polygon_area"}:
         base_questions = [
             "Which measurements matter first, and why?",
             "How does the area model or formula prove your answer?",
@@ -14227,7 +14361,7 @@ def render_exact_learning_objectives_slide(
         Inches(2.0),
         Inches(6.0),
         Inches(1.44),
-        "📐 Content Objective",
+        "Content Objective",
         f"{plan_slide.get('primary_text', '')}\n{plan_slide.get('content_objective_b', '')}",
         fill=PALE_BLUE,
         accent=TEAL,
@@ -14240,10 +14374,10 @@ def render_exact_learning_objectives_slide(
         Inches(2.0),
         Inches(5.97),
         Inches(1.44),
-        "💬 Language Objective",
+        "Language Objective",
         plan_slide.get("secondary_text", ""),
-        fill=PALE_SAGE,
-        accent=SAGE,
+        fill=PALE_NAVY,
+        accent=TEAL,
         title_size=14.6,
         body_size=12.7,
     )
@@ -14255,8 +14389,8 @@ def render_exact_learning_objectives_slide(
         Inches(0.84),
         "Standard",
         plan_slide.get("standard_label", ""),
-        fill=PALE_GOLD,
-        accent=GOLD,
+        fill=PAPER,
+        accent=NAVY,
         title_size=12.8,
         body_size=11.2,
     )
@@ -14268,8 +14402,8 @@ def render_exact_learning_objectives_slide(
         Inches(1.18),
         "Today's 4-Step Path",
         "Move through the notebook in order so each page builds the next part of the lesson.",
-        fill=PALE_GOLD,
-        accent=GOLD,
+        fill=PALE_NAVY,
+        accent=TEAL,
         title_size=13.2,
         body_size=11.0,
     )
@@ -14281,8 +14415,8 @@ def render_exact_learning_objectives_slide(
             Inches(1.88),
             Inches(0.36),
             step,
-            fill=PAPER if index % 2 == 0 else PALE_BLUE,
-            accent=TEAL if index < 2 else SAGE,
+            fill=PAPER if index % 2 == 0 else PAPER_WARM,
+            accent=TEAL if index < 2 else GOLD,
         )
     add_card(
         slide,
@@ -14292,8 +14426,8 @@ def render_exact_learning_objectives_slide(
         Inches(1.14),
         "Language Move",
         plan_slide.get("language_frame_support", "") or plan_slide.get("secondary_text", ""),
-        fill=PALE_SAGE,
-        accent=SAGE,
+        fill=PALE_BLUE,
+        accent=TEAL,
         title_size=13.0,
         body_size=11.2,
     )
@@ -14315,7 +14449,7 @@ def render_exact_be_curious_slide(
         title=plan_slide["title"],
         subtitle=plan_slide["subtitle"],
         page=page,
-        accent=CORAL,
+        accent=TEAL,
         footer_text=footer_text,
     )
     add_image_panel(
@@ -14336,8 +14470,8 @@ def render_exact_be_curious_slide(
         Inches(0.64),
         plan_slide.get("reference_panel_title", "Bridge"),
         plan_slide.get("bridge_sentence", "") or plan_slide.get("response_prompt", "") or f"📐 {plan_slide.get('prior_formula', '')}",
-        fill=PALE_GOLD,
-        accent=GOLD,
+        fill=PALE_NAVY,
+        accent=TEAL,
         title_size=12.6,
         body_size=10.8,
     )
@@ -14369,7 +14503,7 @@ def render_exact_be_curious_slide(
             fallback="Write a question or prediction the image makes you think about.",
         ),
         lines=4,
-        fill=PALE_CORAL,
+        fill=PALE_BLUE,
     )
     if has_activity(plan_slide):
         add_vocabulary_snapshot(
@@ -14413,7 +14547,7 @@ def render_exact_vocabulary_slide(
         title=plan_slide["title"],
         subtitle=plan_slide["subtitle"],
         page=page,
-        accent=SAGE,
+        accent=TEAL,
         footer_text=footer_text,
     )
     vocab_items = plan_slide.get("vocabulary", [])[:4]
@@ -14425,8 +14559,8 @@ def render_exact_vocabulary_slide(
         Inches(0.54),
         "Word | Definition | Example | Visual",
         plan_slide.get("primary_text", "") or "Keep the words, examples, and visual clues together while you solve.",
-        fill=PALE_SAGE,
-        accent=SAGE,
+        fill=PALE_BLUE,
+        accent=TEAL,
         title_size=13.4,
         body_size=11.5,
     )
@@ -14450,7 +14584,7 @@ def render_exact_vocabulary_slide(
         column_widths=[Inches(2.10), Inches(3.34), Inches(3.42), Inches(3.39)],
         row_heights=[Inches(0.44)] + [Inches(0.72)] * max(len(table_data) - 1, 0),
         header_font_size=11.8,
-        body_font_size=10.9,
+        body_font_size=11.2,
         body_align=PP_ALIGN.LEFT,
         column_alignments=[PP_ALIGN.LEFT, PP_ALIGN.LEFT, PP_ALIGN.LEFT, PP_ALIGN.LEFT],
     )
@@ -14462,8 +14596,8 @@ def render_exact_vocabulary_slide(
         Inches(0.50),
         plan_slide.get("reference_flow_title", "Reference Tool"),
         "\n".join(plan_slide.get("reference_flow_lines", [])),
-        fill=PALE_GOLD,
-        accent=GOLD,
+        fill=PALE_NAVY,
+        accent=TEAL,
         title_size=12.6,
         body_size=10.7,
     )
@@ -14483,7 +14617,7 @@ def render_exact_vocabulary_activity_slide(
         title=plan_slide["title"],
         subtitle=plan_slide["subtitle"],
         page=page,
-        accent=SAGE,
+        accent=TEAL,
         footer_text=footer_text,
     )
     add_card(
@@ -14494,8 +14628,8 @@ def render_exact_vocabulary_activity_slide(
         Inches(0.56),
         "Word Match",
         plan_slide.get("primary_text", "") or "Move each word card to the best clue.",
-        fill=PALE_SAGE,
-        accent=SAGE,
+        fill=PALE_BLUE,
+        accent=TEAL,
         title_size=13.8,
         body_size=11.9,
     )
@@ -14518,8 +14652,8 @@ def render_exact_vocabulary_activity_slide(
         Inches(0.60),
         "Say It",
         plan_slide.get("secondary_text", "") or "Say: '___ means ___.'",
-        fill=PALE_GOLD,
-        accent=GOLD,
+        fill=PALE_NAVY,
+        accent=TEAL,
         title_size=12.6,
         body_size=11.4,
     )
@@ -14549,7 +14683,7 @@ def render_exact_guided_practice_slide(
         title=plan_slide["title"],
         subtitle=plan_slide["subtitle"],
         page=page,
-        accent=CORAL,
+        accent=TEAL,
         footer_text=footer_text,
     )
     add_card(
@@ -14560,8 +14694,8 @@ def render_exact_guided_practice_slide(
         Inches(0.62),
         "Source Problem",
         source_problem_text or plan_slide.get("context_hook", ""),
-        fill=PALE_GOLD,
-        accent=GOLD,
+        fill=PALE_BLUE,
+        accent=TEAL,
         title_size=13.0,
         body_size=11.3,
     )
@@ -14581,10 +14715,10 @@ def render_exact_guided_practice_slide(
         Inches(5.72),
         Inches(4.02),
         Inches(0.66),
-        plan_slide.get("formula_label", "📐 Formula"),
+        plan_slide.get("formula_label", "Formula"),
         plan_slide.get("formula_text", ""),
-        fill=PALE_CORAL,
-        accent=CORAL,
+        fill=PALE_NAVY,
+        accent=TEAL,
         title_size=12.5,
         body_size=12.0,
     )
@@ -14605,7 +14739,7 @@ def render_exact_guided_practice_slide(
         "TWR Frame",
         "\n".join(plan_slide.get("twr_frames", [])) or "Think: ___.\nWrite: ___.\nReason: ___.",
         lines=4,
-        fill=PALE_SAGE,
+        fill=PALE_BLUE,
     )
     add_lined_area(
         slide,

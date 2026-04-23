@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import os
 import shlex
 import subprocess
-import tempfile
 from pathlib import Path
 
 
@@ -20,12 +18,6 @@ def run_checked(command: list[str], *, cwd: Path, env: dict[str, str] | None = N
     print(f"$ {display}")
     subprocess.run(command, cwd=str(cwd), env=env, check=True)
 
-
-def require_file(path: Path) -> None:
-    if not path.exists():
-        raise SystemExit(f"Missing expected verification artifact: {path}")
-
-
 def main() -> int:
     if not SAMPLE_DECK.exists():
         raise SystemExit(f"Sample deck not found: {SAMPLE_DECK}")
@@ -33,6 +25,10 @@ def main() -> int:
         raise SystemExit(f"Launcher not found: {LAUNCHER}")
 
     run_checked(["python3", "-m", "pytest", "-q", "tests"], cwd=GENERATOR_DIR)
+    run_checked(
+        ["python3", "-m", "pytest", "-q", "tests/test_lesson_plan_quality_benchmark.py"],
+        cwd=WORKSPACE_ROOT,
+    )
     run_checked(
         [
             "python3",
@@ -44,37 +40,14 @@ def main() -> int:
             "src/render_docx.py",
             "src/utils.py",
             "src/validate_plan.py",
+            "../validation-tools/src/benchmark_lesson_plan_quality.py",
         ],
         cwd=GENERATOR_DIR,
     )
-
-    with tempfile.TemporaryDirectory(prefix="lesson_plan_engine_verify_") as temp_dir:
-        verification_root = Path(temp_dir)
-        inbox_dir = verification_root / "INBOX"
-        output_dir = verification_root / "OUTPUT"
-        inbox_dir.mkdir(parents=True, exist_ok=True)
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        env = os.environ.copy()
-        env["LESSON_PLAN_NO_OPEN"] = "1"
-        env["EDUWONDERLAB_WATCH_DIR"] = str(inbox_dir)
-        env["EDUWONDERLAB_OUTPUT_DIR"] = str(output_dir)
-        run_checked(
-            [str(LAUNCHER), "--deck", str(SAMPLE_DECK)],
-            cwd=WORKSPACE_ROOT,
-            env=env,
-        )
-
-        for relative_path in (
-            Path("lesson_plan.json"),
-            Path("lesson_plan.md"),
-            Path("lesson_plan.docx"),
-            Path("validation_report.md"),
-            Path("extracted/raw_slide_text.json"),
-            Path("extracted/normalized_lesson.json"),
-            Path("extracted/source_fidelity_map.json"),
-        ):
-            require_file(output_dir / relative_path)
+    run_checked(
+        ["python3", "validation-tools/src/benchmark_lesson_plan_quality.py"],
+        cwd=WORKSPACE_ROOT,
+    )
 
     print("Lesson plan engine verification passed.")
     return 0

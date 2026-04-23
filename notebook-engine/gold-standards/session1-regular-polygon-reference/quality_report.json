@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "style_version": "reference-classroom-2026-04-vnext",
+  "sessions": {
+    "Session 1": {
+      "slide_count": 6,
+      "problem_slide_count": 3,
+      "activity_slide_count": 3,
+      "flagship_activity_count": 0,
+      "flagship_activity_fallbacks": [
+        "kept the notebook intentionally compact so students move into the book after the first problem arc"
+      ],
+      "engagement_slide_count": 4,
+      "engagement_modes": [
+        "build",
+        "discuss",
+        "notice",
+        "partner"
+      ],
+      "long_problem_stack_pages": [],
+      "problem_checks": [
+        {
+          "page": 4,
+          "kind": "worked_example",
+          "full_source_problem_preserved": true,
+          "main_source_problem": "Why is the height of one triangle 18 inches?"
+        },
+        {
+          "page": 5,
+          "kind": "practice",
+          "full_source_problem_preserved": true,
+          "main_source_problem": "Why is the height of one triangle 18 inches?"
+        },
+        {
+          "page": 6,
+          "kind": "practice",
+          "full_source_problem_preserved": true,
+          "main_source_problem": "Why is the height of one triangle 18 inches?"
+        }
+      ],
+      "copyedit_flags": [],
+      "issues": []
+    }
+  }
+}

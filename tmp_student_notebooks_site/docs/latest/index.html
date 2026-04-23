@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>No Notebook Published Yet</title>
+  <meta name="description" content="No notebook has been published yet.">
+  <!-- NOTEBOOK_STATUS: placeholder -->
+  <style>
+    :root {
+      --navy: #102542;
+      --teal: #1f8a8a;
+      --cream: #f7f1e3;
+      --ink: #1f2933;
+      --line: rgba(16, 37, 66, 0.14);
+      --shadow: 0 24px 48px rgba(16, 37, 66, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(31, 138, 138, 0.16), transparent 32%),
+        linear-gradient(180deg, #fffdf7 0%, var(--cream) 100%);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    main {
+      width: min(760px, 100%);
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font: 600 0.82rem/1.2 "Trebuchet MS", Arial, sans-serif;
+      color: var(--teal);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--navy);
+    }
+
+    p {
+      margin: 0 0 18px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--navy);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Student Notebooks Site</p>
+    <h1>No notebook has been published yet.</h1>
+    <p>The latest lesson experience will appear here after the first publish run.</p>
+    <p><a href="../">Return to the homepage</a></p>
+  </main>
+</body>
+</html>

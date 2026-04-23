@@ -15,6 +15,8 @@
 - Use only the approved support mapping above.
 - Keep supports concise and classroom-usable.
 - Embed support moves naturally across lesson phases instead of dropping all support language at the end.
+- Keep active initials visible in the compact collaborative and independent SPED modification cells.
+- When any active profile requires small group, add a small-group move anchored to the same slide/book task instead of a generic reteach note.
 - Do not change the source task in order to add supports.
 
 ## ESOL rules

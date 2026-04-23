@@ -1,0 +1,105 @@
+{
+  "lesson_title": "Apply Area Concepts to Solve Problems",
+  "source_filename": "lesson-5-4.pptx",
+  "slide_count": 7,
+  "summary": "Students find the area of a regular polygon by decomposing an octagon into congruent triangles.",
+  "keyword_candidates": [
+    "area",
+    "regular polygon",
+    "octagon",
+    "decompose"
+  ],
+  "standards": [
+    "6.G.A.1"
+  ],
+  "slides": [
+    {
+      "slide_number": 1,
+      "title": "Session 1",
+      "text": "Session 1 Apply Area Concepts to Solve Problems",
+      "text_items": [
+        "Session 1"
+      ],
+      "problem_texts": [],
+      "notes": "",
+      "image_count": 0
+    },
+    {
+      "slide_number": 2,
+      "title": "Be Curious",
+      "text": "Why does confidence in yourself and your abilities help you be successful in math?",
+      "text_items": [
+        "What do you notice? What do you wonder?",
+        "Why does confidence in yourself and your abilities help you be successful in math?"
+      ],
+      "problem_texts": [
+        "Why does confidence in yourself and your abilities help you be successful in math?"
+      ],
+      "notes": "",
+      "image_count": 1
+    },
+    {
+      "slide_number": 3,
+      "title": "Stop Sign",
+      "text": "How can you decompose the octagon into shapes that you can find the area of?",
+      "text_items": [
+        "How can you decompose the octagon into shapes that you can find the area of?"
+      ],
+      "problem_texts": [
+        "How can you decompose the octagon into shapes that you can find the area of?"
+      ],
+      "notes": "",
+      "image_count": 1
+    },
+    {
+      "slide_number": 4,
+      "title": "Stop Sign",
+      "text": "Let's decompose the octagon into 8 congruent triangles. Because each side has the same length, the octagon is a regular polygon. You can decompose a regular polygon into triangles to determine the area.",
+      "text_items": [
+        "Let's decompose the octagon into 8 congruent triangles. Because each side has the same length, the octagon is a regular polygon. You can decompose a regular polygon into triangles to determine the area."
+      ],
+      "problem_texts": [
+        "Why is the height of one triangle 18 inches?"
+      ],
+      "notes": "",
+      "image_count": 1
+    },
+    {
+      "slide_number": 5,
+      "title": "Stop Sign",
+      "text": "The octagon can be decomposed into 8 congruent triangles. Each side is the base of a triangle. How can you determine the area of the octagon using the triangles?",
+      "text_items": [
+        "The octagon can be decomposed into 8 congruent triangles.",
+        "Each side is the base of a triangle."
+      ],
+      "problem_texts": [
+        "How can you determine the area of the octagon using the triangles?"
+      ],
+      "notes": "",
+      "image_count": 1
+    },
+    {
+      "slide_number": 6,
+      "title": "Learning Targets",
+      "text": "I can find the area of a regular polygon by decomposing the figure into triangles. I can make use of structure to find the area of a composite figure by decomposing the figure into other shapes.",
+      "text_items": [
+        "I can find the area of a regular polygon by decomposing the figure into triangles.",
+        "I can make use of structure to find the area of a composite figure by decomposing the figure into other shapes."
+      ],
+      "problem_texts": [],
+      "notes": "",
+      "image_count": 0
+    },
+    {
+      "slide_number": 7,
+      "title": "Session 2",
+      "text": "Session 2 Apply Area Concepts to Solve Problems",
+      "text_items": [
+        "Session 2"
+      ],
+      "problem_texts": [],
+      "notes": "",
+      "image_count": 0
+    }
+  ]
+}

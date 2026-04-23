@@ -16,6 +16,33 @@ SESSION_REQUEST_PATTERN = re.compile(r"\b(?:session|day)\s*([12])\b", re.IGNOREC
 ISO_DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 DOT_SLASH_DATE_PATTERN = re.compile(r"^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$")
 DECK_DATE_PATTERN = re.compile(r"(20\d{2})[-_.](\d{1,2})[-_.](\d{1,2})")
+LEARNING_TARGET_STOPWORDS = {
+    "about",
+    "because",
+    "figure",
+    "find",
+    "into",
+    "make",
+    "other",
+    "shapes",
+    "structure",
+    "that",
+    "their",
+    "them",
+    "these",
+    "this",
+    "those",
+    "using",
+    "with",
+}
+LEARNING_TARGET_CONCEPT_ALIASES = {
+    "composite figure": ("composite figure", "irregular shape", "irregular figure", "flag", "swallowtail", "trapezoid"),
+    "regular polygon": ("regular polygon", "polygon", "octagon", "hexagon", "pentagon"),
+    "triangle": ("triangle", "triangles", "base", "height", "parallelogram"),
+    "independent variable": ("independent variable", "input"),
+    "dependent variable": ("dependent variable", "output"),
+    "proportional relationship": ("proportional relationship", "rate", "table", "equation"),
+}
 
 
 class LessonPlanError(RuntimeError):
@@ -192,6 +219,62 @@ def read_optional_agenda(agenda_dir: Path) -> list[str]:
 
 def parse_standards(text: str) -> list[str]:
     return unique_preserve(STANDARD_PATTERN.findall(text))
+
+
+def select_preferred_learning_target(targets: Sequence[str], source_blob: str) -> str:
+    cleaned_targets = [clean_line(target) for target in targets if clean_line(target)]
+    if not cleaned_targets:
+        return ""
+    normalized_blob = clean_source_line(source_blob).lower()
+    if not normalized_blob:
+        return cleaned_targets[0]
+
+    best_target = cleaned_targets[0]
+    best_score = float("-inf")
+    for index, target in enumerate(cleaned_targets):
+        score = _score_learning_target(target, normalized_blob) - (index * 0.01)
+        if score > best_score:
+            best_target = target
+            best_score = score
+    return best_target
+
+
+def _score_learning_target(target: str, normalized_blob: str) -> float:
+    lowered_target = clean_line(target).lower()
+    if not lowered_target:
+        return float("-inf")
+
+    score = 0.0
+    for concept, aliases in LEARNING_TARGET_CONCEPT_ALIASES.items():
+        if concept not in lowered_target:
+            continue
+        if any(alias in normalized_blob for alias in aliases):
+            score += 6.0
+
+    for stem in _keyword_stems(lowered_target):
+        if stem in normalized_blob:
+            score += 1.0
+    if "area" in lowered_target and "area" in normalized_blob:
+        score += 1.0
+    if ("compose" in lowered_target or "decompos" in lowered_target) and (
+        "compose" in normalized_blob or "decompose" in normalized_blob
+    ):
+        score += 1.5
+    return score
+
+
+def _keyword_stems(text: str) -> list[str]:
+    stems: list[str] = []
+    for word in re.findall(r"[a-z]+", text.lower()):
+        if len(word) < 4 or word in LEARNING_TARGET_STOPWORDS:
+            continue
+        stem = word
+        for suffix in ("ing", "ers", "ies", "es", "ed", "s"):
+            if stem.endswith(suffix) and len(stem) > len(suffix) + 2:
+                stem = stem[: -len(suffix)]
+                break
+        stems.append(stem)
+    return stems
 
 
 def infer_date(date_override: str = "") -> str:

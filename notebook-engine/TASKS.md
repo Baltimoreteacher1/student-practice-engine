@@ -7,10 +7,12 @@
 - [x] Add an additive flagship activity layer after the premium layer without changing the core notebook pipeline.
 - [x] Scaffold `enhancement/` as the separate polish lane for externally generated notebook bundles.
 - [x] Ship a next-generation premium notebook release across both generator output and enhancement output.
-- [ ] Define one durable `INBOX/` to `OUTPUT/` bundle contract for recurring notebook runs.
+- [x] Define one durable `INBOX/` to `OUTPUT/` bundle contract for recurring notebook runs.
 - [x] Add one documented quality gate path that must pass before outputs are treated as final.
 - [x] Tighten the premium QA gate so correct-but-bland notebook output is repaired instead of silently passing.
-- [ ] Document which local runtime files are primary, support-only, and secondary snapshots.
+- [x] Document which local runtime files are primary, support-only, and secondary snapshots.
+- [x] Add one canonical notebook verification command in `../validation-tools/src/verify_notebook_engine.py`.
+- [x] Add deterministic benchmark cases that lock the compressed Session 1 quality bar and fidelity bar.
 
 ## Next
 

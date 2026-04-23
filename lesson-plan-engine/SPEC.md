@@ -25,6 +25,19 @@ Canonical runtime: `../codex-lesson-plan-generator/run.py`
 - completed source bundles in `ARCHIVE/`
 - run and QA notes in `logs/`
 
+Current locked teacher-facing reference bundle:
+
+- title line with teacher name, session title, and rendered date
+- `IEP Students` line with the active initials for that lesson
+- `DO NOW`
+- `STANDARDS` with a 3-column prerequisite / target / extension table
+- `OBJECTIVES` with content objective, before/after self-check line, language objective, and before/after self-check line
+- `LESSON PROCEDURES` with the 6-column compact procedures table
+- `LESSON PROCEDURES` keeps every active IEP/SPED initial visible in the collaborative and independent modification cells
+- lessons with small-group profiles include a source-grounded small-group move tied to the slide or book task
+- `VOCABULARY` with the 7-column vocabulary table
+- `IEP ACCOMMODATIONS MATRIX` with the active initials and lesson-specific accommodations
+
 ## Non-negotiables
 
 - source deck and source lesson text are the truth

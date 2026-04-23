@@ -8,6 +8,7 @@ from utils import (
     clean_line,
     format_session_docx_name,
     join_slide_numbers,
+    select_preferred_learning_target,
     truncate,
     unique_preserve,
     write_json,
@@ -242,6 +243,25 @@ def build_session_plan(
             "teacher_notes": build_teacher_notes(session_extract),
             "precision_monitoring": build_precision_monitoring(session_extract),
         },
+        "reference_render_context": {
+            "lesson_topic": lesson_extract.get("lesson_topic", ""),
+            "be_curious_prompts": list(session_extract.get("be_curious_prompts", [])),
+            "mindset_prompts": list(session_extract.get("mindset_prompts", [])),
+            "vocabulary_terms": list(session_extract.get("vocabulary_terms", [])),
+            "worked_examples": list(session_extract.get("worked_examples", [])),
+            "reveal_discussion_prompts": list(session_extract.get("reveal_discussion_prompts", [])),
+            "checks_for_understanding": list(session_extract.get("checks_for_understanding", [])),
+            "reasoning_tasks": list(session_extract.get("reasoning_tasks", [])),
+            "collaborative_tasks": list(session_extract.get("collaborative_tasks", [])),
+            "guided_practice": list(session_extract.get("guided_practice", [])),
+            "independent_practice": list(session_extract.get("independent_practice", [])),
+            "lets_explore_more_tasks": list(session_extract.get("lets_explore_more_tasks", [])),
+            "apply_transfer_tasks": list(session_extract.get("apply_transfer_tasks", [])),
+            "summary_closure_language": list(session_extract.get("summary_closure_language", [])),
+            "homework_follow_up_tasks": list(session_extract.get("homework_follow_up_tasks", [])),
+            "reveal_math_workbook_references": list(session_extract.get("reveal_math_workbook_references", [])),
+            "speaker_note_teaching_moves": list(session_extract.get("speaker_note_teaching_moves", [])),
+        },
     }
 
 
@@ -276,9 +296,12 @@ def build_course_grade_label(config: dict[str, Any]) -> str:
 
 
 def build_lesson_objective(session_extract: dict[str, Any]) -> str:
-    learning_targets = session_extract.get("learning_targets", [])
-    if learning_targets:
-        objective = clean_line(learning_targets[0])
+    preferred_learning_target = select_preferred_learning_target(
+        session_extract.get("learning_targets", []),
+        build_learning_target_source_blob(session_extract),
+    )
+    if preferred_learning_target:
+        objective = clean_line(preferred_learning_target)
         for prefix in ("I can ", "We will "):
             if objective.startswith(prefix):
                 objective = objective[len(prefix) :]
@@ -293,6 +316,21 @@ def build_lesson_objective(session_extract: dict[str, Any]) -> str:
         return ensure_sentence(source_lines[0].rstrip("?"))
 
     return "Use the source slides to meet the lesson goal stated in class."
+
+
+def build_learning_target_source_blob(session_extract: dict[str, Any]) -> str:
+    pieces = merge_lists(
+        session_extract.get("opening_source", {}).get("lines", []),
+        session_extract.get("modeling_source", {}).get("lines", []),
+        session_extract.get("guided_practice", []),
+        session_extract.get("independent_practice", []),
+        session_extract.get("checks_for_understanding", []),
+        session_extract.get("reasoning_tasks", []),
+    )
+    session_title = clean_line(session_extract.get("session_title", ""))
+    if session_title:
+        pieces.append(session_title)
+    return " ".join(pieces)
 
 
 def derive_success_criteria(session_extract: dict[str, Any]) -> list[str]:

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Generate polished two-session student notebooks from source lesson materials while preserving lesson fidelity and passing quality validation.
+Generate polished, source-faithful student notebook outputs from source lesson materials while preserving lesson fidelity and passing quality validation.
 
 ## Current implementation sources
 
@@ -23,9 +23,30 @@ Secondary hosted runtime:
 - reference examples in `examples/`
 - approved final notebook references in `gold-standards/`
 
+## Default session build contract
+
+Unless the prompt explicitly asks for the full notebook, default to the compressed Session 1 notebook sequence:
+
+1. `Objectives + Session Map`
+2. `Be Curious`
+3. `Vocabulary + Reference Tool`
+4. `Guided Problem`
+5. `Interactive Activity`
+6. `Best-Fit Interactive Review`
+
+Rules for this default path:
+
+- preserve the guided/source problem wording verbatim when available
+- keep `Be Curious` fully intact instead of compressing it further
+- anchor vocabulary to the lesson math content, not to generic launch or mindset slides
+- choose the interactive activity based on the lesson type
+- use the strongest discussion-ready closing review rather than a decorative filler page
+
 ## Outputs
 
 - final notebook bundles in `OUTPUT/`
+- default bundle includes the compressed Session 1 notebook
+- Session 2 notebook output is optional and should appear only when the prompt, workflow, or notebook plan explicitly calls for it
 - completed source decks and bundles in `ARCHIVE/`
 - run history and QA notes in `logs/`
 
@@ -72,7 +93,8 @@ Enhancement rules:
 ## Non-negotiables
 
 - source deck problems and lesson flow stay anchored to the source
-- final output is a two-session notebook set unless the spec changes explicitly
+- compressed Session 1 is the default deliverable unless the user explicitly requests a different structure
+- Session 2 output should be generated only when the workflow explicitly calls for it
 - quality reporting is required before final delivery
 - launcher and folder-runner contracts must remain stable when automation depends on them
 - local runtime is the default daily notebook workflow unless hosted behavior is explicitly required

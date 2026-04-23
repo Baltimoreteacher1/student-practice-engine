@@ -1,0 +1,228 @@
+{
+  "name": "notebook_regular_polygon_fidelity_case",
+  "deck": {
+    "lesson_title": "Apply Area Concepts to Solve Problems",
+    "source_filename": "lesson-5-4.pptx",
+    "slide_count": 7,
+    "summary": "Students find the area of a regular polygon by decomposing an octagon into congruent triangles.",
+    "keyword_candidates": [
+      "area",
+      "regular polygon",
+      "octagon",
+      "decompose"
+    ],
+    "standards": [
+      "6.G.A.1"
+    ],
+    "slides": [
+      {
+        "slide_number": 1,
+        "title": "Session 1",
+        "text": "Session 1 Apply Area Concepts to Solve Problems",
+        "text_items": [
+          "Session 1"
+        ],
+        "problem_texts": [],
+        "notes": "",
+        "image_count": 0
+      },
+      {
+        "slide_number": 2,
+        "title": "Be Curious",
+        "text": "Why does confidence in yourself and your abilities help you be successful in math?",
+        "text_items": [
+          "What do you notice? What do you wonder?",
+          "Why does confidence in yourself and your abilities help you be successful in math?"
+        ],
+        "problem_texts": [
+          "Why does confidence in yourself and your abilities help you be successful in math?"
+        ],
+        "notes": "",
+        "image_count": 1
+      },
+      {
+        "slide_number": 3,
+        "title": "Stop Sign",
+        "text": "How can you decompose the octagon into shapes that you can find the area of?",
+        "text_items": [
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "problem_texts": [
+          "How can you decompose the octagon into shapes that you can find the area of?"
+        ],
+        "notes": "",
+        "image_count": 1
+      },
+      {
+        "slide_number": 4,
+        "title": "Stop Sign",
+        "text": "Let's decompose the octagon into 8 congruent triangles. Because each side has the same length, the octagon is a regular polygon. You can decompose a regular polygon into triangles to determine the area.",
+        "text_items": [
+          "Let's decompose the octagon into 8 congruent triangles. Because each side has the same length, the octagon is a regular polygon. You can decompose a regular polygon into triangles to determine the area."
+        ],
+        "problem_texts": [
+          "Why is the height of one triangle 18 inches?"
+        ],
+        "notes": "",
+        "image_count": 1
+      },
+      {
+        "slide_number": 5,
+        "title": "Stop Sign",
+        "text": "The octagon can be decomposed into 8 congruent triangles. Each side is the base of a triangle. How can you determine the area of the octagon using the triangles?",
+        "text_items": [
+          "The octagon can be decomposed into 8 congruent triangles.",
+          "Each side is the base of a triangle."
+        ],
+        "problem_texts": [
+          "How can you determine the area of the octagon using the triangles?"
+        ],
+        "notes": "",
+        "image_count": 1
+      },
+      {
+        "slide_number": 6,
+        "title": "Learning Targets",
+        "text": "I can find the area of a regular polygon by decomposing the figure into triangles. I can make use of structure to find the area of a composite figure by decomposing the figure into other shapes.",
+        "text_items": [
+          "I can find the area of a regular polygon by decomposing the figure into triangles.",
+          "I can make use of structure to find the area of a composite figure by decomposing the figure into other shapes."
+        ],
+        "problem_texts": [],
+        "notes": "",
+        "image_count": 0
+      },
+      {
+        "slide_number": 7,
+        "title": "Session 2",
+        "text": "Session 2 Apply Area Concepts to Solve Problems",
+        "text_items": [
+          "Session 2"
+        ],
+        "problem_texts": [],
+        "notes": "",
+        "image_count": 0
+      }
+    ]
+  },
+  "plan_seed": {
+    "lesson_title": "Apply Area Concepts to Solve Problems",
+    "subject": "Math",
+    "grade_level": "6",
+    "standards": [
+      "6.G.A.1"
+    ],
+    "topic_summary": "Use decomposition and congruent triangles to find the area of a regular polygon.",
+    "session_1": {
+      "session_title": "Session 1 Student Notebook",
+      "session_subtitle": "",
+      "slides": []
+    }
+  },
+  "plan_expectations": {
+    "template_roles": [
+      [
+        "learning_target",
+        "learning_objectives"
+      ],
+      [
+        "be_curious",
+        "prior_session_review"
+      ],
+      [
+        "vocabulary",
+        "vocabulary_table"
+      ],
+      [
+        "worked_example",
+        "guided_practice"
+      ],
+      [
+        "practice",
+        "interactive_activity"
+      ],
+      [
+        "practice",
+        "best_fit_review"
+      ]
+    ],
+    "slides": [
+      {
+        "index": 0,
+        "primary_text_includes": [
+          "regular polygon"
+        ]
+      },
+      {
+        "index": 1,
+        "source_slide_numbers_excludes": [
+          1,
+          2
+        ]
+      },
+      {
+        "index": 2,
+        "vocabulary_words_include": [
+          "area",
+          "regular polygon",
+          "octagon",
+          "decompose",
+          "congruent triangles"
+        ],
+        "vocabulary_words_exclude": [
+          "confidence",
+          "yourself",
+          "abilities"
+        ]
+      }
+    ]
+  },
+  "report_expectations": {
+    "passed": true,
+    "required_sessions": [
+      "Session 1"
+    ],
+    "sessions": {
+      "Session 1": {
+        "slide_count": {
+          "equals": 6
+        },
+        "problem_slide_count": {
+          "min": 3
+        },
+        "activity_slide_count": {
+          "min": 3
+        },
+        "engagement_slide_count": {
+          "min": 4
+        },
+        "engagement_modes": {
+          "includes": [
+            "build",
+            "discuss",
+            "notice",
+            "partner"
+          ]
+        },
+        "long_problem_stack_pages": {
+          "max_len": 0
+        },
+        "copyedit_flags": {
+          "max_len": 0
+        },
+        "issues": {
+          "max_len": 0
+        },
+        "problem_checks": {
+          "min_len": 3,
+          "all_full_source_problem_preserved": true
+        }
+      }
+    }
+  },
+  "gold_standard": {
+    "plan_path": "notebook-engine/gold-standards/session1-regular-polygon-reference/notebook_plan.json",
+    "report_path": "notebook-engine/gold-standards/session1-regular-polygon-reference/quality_report.json",
+    "session1_pptx_path": "notebook-engine/gold-standards/session1-regular-polygon-reference/Session 1 - Student Notebook.pptx"
+  }
+}

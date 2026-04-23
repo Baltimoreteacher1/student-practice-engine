@@ -1,0 +1,27 @@
+name: Quality Gates
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  workspace-validation:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Validation Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r codex-lesson-plan-generator/requirements.txt
+
+      - name: Verify Lesson Plan Engine
+        run: python3 validation-tools/src/verify_lesson_plan_engine.py
+
+      - name: Verify Notebook Engine
+        run: python3 validation-tools/src/verify_notebook_engine.py

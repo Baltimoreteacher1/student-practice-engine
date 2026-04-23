@@ -1,0 +1,226 @@
+{
+  "deck_title": "Determine Area of Triangles Lesson launch",
+  "lesson_topic": "Determine Area of Triangles Lesson launch",
+  "source_file": "codex-lesson-plan-generator/examples/sample_input_slides.pptx",
+  "source_filename": "sample_input_slides.pptx",
+  "slide_count": 8,
+  "learning_target_bundle": {
+    "slide_numbers": [
+      3
+    ],
+    "standards": [
+      "6.G.A.1"
+    ],
+    "standards_source_lines": [
+      "Standard: 6.G.A.1"
+    ],
+    "standards_status": "",
+    "learning_targets": [
+      "I can determine the area of a triangle using a related rectangle or parallelogram."
+    ],
+    "success_criteria": [
+      "I can identify the base and height.",
+      "I can explain why the triangle area formula works.",
+      "I can solve a source problem and justify my strategy."
+    ]
+  },
+  "session_count": 1,
+  "sessions": [
+    {
+      "session_label": "Session 1",
+      "session_number": 1,
+      "session_title": "Determine Area of Triangles Lesson launch",
+      "slide_range": {
+        "start": 1,
+        "end": 8
+      },
+      "source_slide_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "learning_targets": [
+        "I can determine the area of a triangle using a related rectangle or parallelogram."
+      ],
+      "success_criteria": [
+        "I can identify the base and height.",
+        "I can explain why the triangle area formula works.",
+        "I can solve a source problem and justify my strategy."
+      ],
+      "standards": [
+        "6.G.A.1"
+      ],
+      "standards_status": "",
+      "standards_source": {
+        "slide_numbers": [
+          3
+        ],
+        "source_lines": [
+          "Standard: 6.G.A.1"
+        ]
+      },
+      "opening_source": {
+        "slide_numbers": [
+          1,
+          2
+        ],
+        "lines": [
+          "Lesson launch",
+          "What shapes do you notice?",
+          "Estimate which shape has the greater area."
+        ],
+        "source_excerpt": "Lesson launch What shapes do you notice? Estimate which shape has the greater area.",
+        "slide_label": "1, 2"
+      },
+      "modeling_source": {
+        "slide_numbers": [
+          4
+        ],
+        "lines": [
+          "Rectangle area review",
+          "How does the rectangle help you reason about triangle area?"
+        ],
+        "source_excerpt": "Rectangle area review How does the rectangle help you reason about triangle area?",
+        "slide_label": "4"
+      },
+      "collaborative_source": {
+        "slide_numbers": [
+          7
+        ],
+        "lines": [
+          "Explain why doubling the triangle creates a parallelogram.",
+          "What misconception should we watch for?"
+        ],
+        "source_excerpt": "Explain why doubling the triangle creates a parallelogram. What misconception should we watch for?",
+        "slide_label": "7"
+      },
+      "guided_source": {
+        "slide_numbers": [
+          5
+        ],
+        "lines": [
+          "Triangle A has base 10 units and height 6 units. What is its area?",
+          "Which measurement is the height?"
+        ],
+        "source_excerpt": "Triangle A has base 10 units and height 6 units. What is its area? Which measurement is the height?",
+        "slide_label": "5"
+      },
+      "independent_source": {
+        "slide_numbers": [
+          6
+        ],
+        "lines": [
+          "Find the area of Triangle B with base 12 units and height 9 units.",
+          "Show your work and label units."
+        ],
+        "source_excerpt": "Find the area of Triangle B with base 12 units and height 9 units. Show your work and label units.",
+        "slide_label": "6"
+      },
+      "closure_source": {
+        "slide_numbers": [
+          8
+        ],
+        "lines": [
+          "A triangle has area 24 square units and height 6 units. What is the base?",
+          "Explain your reasoning."
+        ],
+        "source_excerpt": "A triangle has area 24 square units and height 6 units. What is the base? Explain your reasoning.",
+        "slide_label": "8"
+      },
+      "be_curious_prompts": [
+        "What shapes do you notice?"
+      ],
+      "mindset_prompts": [],
+      "vocabulary_terms": [],
+      "worked_examples": [
+        {
+          "prompt": "How does the rectangle help you reason about triangle area?",
+          "reveal": "Rectangle area review",
+          "slide_numbers": [
+            4
+          ]
+        },
+        {
+          "prompt": "Triangle A has base 10 units and height 6 units. What is its area?",
+          "reveal": "",
+          "slide_numbers": [
+            5
+          ]
+        }
+      ],
+      "reveal_discussion_prompts": [
+        {
+          "prompt": "What misconception should we watch for?",
+          "reveal": "Explain why doubling the triangle creates a parallelogram.",
+          "slide_numbers": [
+            7
+          ]
+        },
+        {
+          "prompt": "A triangle has area 24 square units and height 6 units. What is the base?",
+          "reveal": "Explain your reasoning.",
+          "slide_numbers": [
+            8
+          ]
+        }
+      ],
+      "collaborative_tasks": [
+        "Explain why doubling the triangle creates a parallelogram.",
+        "What misconception should we watch for?"
+      ],
+      "guided_practice": [
+        "Triangle A has base 10 units and height 6 units. What is its area?",
+        "Which measurement is the height?"
+      ],
+      "independent_practice": [
+        "Find the area of Triangle B with base 12 units and height 9 units.",
+        "Show your work and label units."
+      ],
+      "lets_explore_more_tasks": [],
+      "summary_closure_language": [],
+      "apply_transfer_tasks": [],
+      "homework_follow_up_tasks": [],
+      "required_visuals": [
+        "I can determine the area of a triangle using a related rectangle or parallelogram.",
+        "I can identify the base and height.",
+        "I can explain why the triangle area formula works.",
+        "Rectangle area review",
+        "How does the rectangle help you reason about triangle area?",
+        "Triangle A has base 10 units and height 6 units. What is its area?",
+        "Which measurement is the height?",
+        "Find the area of Triangle B with base 12 units and height 9 units."
+      ],
+      "speaker_note_teaching_moves": [],
+      "checks_for_understanding": [
+        "What misconception should we watch for?",
+        "Triangle A has base 10 units and height 6 units. What is its area?",
+        "Which measurement is the height?",
+        "A triangle has area 24 square units and height 6 units. What is the base?"
+      ],
+      "reasoning_tasks": [
+        "I can identify the base and height.",
+        "I can explain why the triangle area formula works.",
+        "I can solve a source problem and justify my strategy.",
+        "Triangle A has base 10 units and height 6 units. What is its area?",
+        "Which measurement is the height?",
+        "Find the area of Triangle B with base 12 units and height 9 units.",
+        "Explain why doubling the triangle creates a parallelogram.",
+        "A triangle has area 24 square units and height 6 units. What is the base?"
+      ],
+      "reveal_math_workbook_references": [],
+      "source_summary": "Session 1 spans slides 1-8."
+    }
+  ],
+  "metadata": {
+    "default_grade": "6",
+    "default_subject": "Mathematics",
+    "learning_target_candidate_numbers": [
+      3
+    ]
+  }
+}

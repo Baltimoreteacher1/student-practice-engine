@@ -64,7 +64,8 @@ The first time you run the app or folder runner, it also drops a clickable macOS
 
 Drop one or more `.pptx` files into `Notebook Inbox`, then double-click that launcher or run the command manually. It will:
 
-- generate Session 1 and Session 2 notebooks for each deck
+- generate the default compressed Session 1 notebook for each deck
+- generate Session 2 only when the workflow or prompt explicitly requests a second session
 - copy the finished notebooks into `Notebook Output/<deck-name>-notebooks/`
 - move the original source deck into `Notebook Archive`
 - write `Notebook Output/notebook_inbox_last_run.log`

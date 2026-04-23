@@ -1,0 +1,81 @@
+[
+  {
+    "slide_number": 1,
+    "title": "Determine Area of Triangles",
+    "source_excerpt": "Determine Area of Triangles Lesson launch",
+    "used_in_sections": [
+      "Session 1: lesson_information",
+      "Session 1: opening_warm_up_launch"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  },
+  {
+    "slide_number": 2,
+    "title": "Do Now",
+    "source_excerpt": "Do Now What shapes do you notice? Estimate which shape has the greater area.",
+    "used_in_sections": [
+      "Session 1: lesson_information",
+      "Session 1: opening_warm_up_launch"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  },
+  {
+    "slide_number": 3,
+    "title": "Learning Target",
+    "source_excerpt": "Learning Target Standard: 6.G.A.1 I can determine the area of a triangle using a related rectangle or parallelogram. Success Criteria I can identify the base and height. I can explain why the triangle area formula works\u2026",
+    "used_in_sections": [
+      "Session 1: lesson_information",
+      "Session 1: standards_and_learning_targets"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  },
+  {
+    "slide_number": 4,
+    "title": "Model",
+    "source_excerpt": "Model Rectangle area review How does the rectangle help you reason about triangle area?",
+    "used_in_sections": [
+      "Session 1: lesson_information",
+      "Session 1: mini_lesson_modeling_concept_development"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  },
+  {
+    "slide_number": 5,
+    "title": "Guided Practice",
+    "source_excerpt": "Guided Practice Triangle A has base 10 units and height 6 units. What is its area? Which measurement is the height?",
+    "used_in_sections": [
+      "Session 1: lesson_information",
+      "Session 1: guided_practice_collaborative_learning"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  },
+  {
+    "slide_number": 6,
+    "title": "Independent Practice",
+    "source_excerpt": "Independent Practice Find the area of Triangle B with base 12 units and height 9 units. Show your work and label units.",
+    "used_in_sections": [
+      "Session 1: lesson_information",
+      "Session 1: independent_practice_application_stations"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  },
+  {
+    "slide_number": 7,
+    "title": "Discussion",
+    "source_excerpt": "Discussion Explain why doubling the triangle creates a parallelogram. What misconception should we watch for?",
+    "used_in_sections": [
+      "Session 1: lesson_information"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  },
+  {
+    "slide_number": 8,
+    "title": "Exit Ticket",
+    "source_excerpt": "Exit Ticket A triangle has area 24 square units and height 6 units. What is the base? Explain your reasoning.",
+    "used_in_sections": [
+      "Session 1: lesson_information",
+      "Session 1: closure_exit_ticket_assessment"
+    ],
+    "mapping_note": "Directly mapped to the listed session section(s)."
+  }
+]

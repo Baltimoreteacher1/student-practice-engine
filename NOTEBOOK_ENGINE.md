@@ -1,6 +1,6 @@
 # Notebook Engine
 
-`notebook_engine.py` is the reusable MVP path for generating two student notebooks from an uploaded `.pptx` deck.
+`notebook_engine.py` is the reusable local path for generating production-ready student notebook bundles from an uploaded `.pptx` deck.
 
 ## What It Does
 
@@ -9,8 +9,8 @@
 - Uses the OpenAI Responses API with strict JSON schema output to build `notebook_plan.json`
 - Pulls from `activity_library.txt` so the planner can choose lesson-fit interactive notebook structures
 - Renders:
-  - `Session 1 - Student Notebook.pptx`
-  - `Session 2 - Student Notebook.pptx`
+  - `Session 1 - Student Notebook.pptx` on the default compressed notebook path
+  - `Session 2 - Student Notebook.pptx` when the workflow explicitly requests a second session
 
 ## Why This Path
 
@@ -30,6 +30,17 @@ OPENAI_MODEL=gpt-5.4
 ```
 
 `OPENAI_MODEL` is optional. The script defaults to `gpt-5.4`.
+
+## Default Build Contract
+
+Unless the prompt explicitly asks for a different structure, the default notebook path is the compressed 6-slide Session 1 sequence:
+
+1. `Objectives + Session Map`
+2. `Be Curious`
+3. `Vocabulary + Reference Tool`
+4. `Guided Problem`
+5. `Interactive Activity`
+6. `Best-Fit Interactive Review`
 
 ## Main Command
 

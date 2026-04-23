@@ -3,8 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from apply_supports import APPROVED_SUPPORT_MAPPING
+from apply_supports import APPROVED_SUPPORT_MAPPING, student_requires_small_group
 from build_lesson_plan import SESSION_SECTION_KEYS
+from render_docx import _build_compact_session_view
 from utils import LessonPlanError, parse_standards, validate_against_schema, write_text
 
 
@@ -229,16 +230,77 @@ def validate_teacher_facing_output(lesson_plan: dict[str, Any]) -> tuple[bool, s
 
 
 def validate_supports(lesson_plan: dict[str, Any]) -> tuple[bool, str]:
+    compact_render_keys = (
+        "opening_warm_up_launch",
+        "mini_lesson_modeling_concept_development",
+        "guided_practice_collaborative_learning",
+        "independent_practice_application_stations",
+        "closure_exit_ticket_assessment",
+    )
     for session in lesson_plan.get("sessions", []):
         supports = session.get("differentiation_sped_esol_supports_and_teacher_notes", {})
+        sped_supports = supports.get("sped", [])
+        compact_view = (
+            _build_compact_session_view(session, config={})
+            if sped_supports and all(key in session for key in compact_render_keys)
+            else {}
+        )
         for item in supports.get("sped", []):
-            approved = set(APPROVED_SUPPORT_MAPPING.get(item["student"], []))
-            if not set(item["supports"]).issubset(approved):
-                return False, f"{session['session_label']} includes an unapproved SPED support for {item['student']}."
+            profile = item.get("profile", item["student"])
+            if profile not in APPROVED_SUPPORT_MAPPING:
+                return False, f"{session['session_label']} includes an unsupported SPED support profile for {item['student']}."
+            if not item.get("supports"):
+                return False, f"{session['session_label']} is missing SPED support details for {item['student']}."
+            if any(len(str(support)) > 120 for support in item["supports"]):
+                return False, f"{session['session_label']} includes an overlong SPED support entry for {item['student']}."
+            if item.get("matrix_supports") and len(str(item["matrix_supports"])) > 220:
+                return False, f"{session['session_label']} includes an overlong IEP matrix entry for {item['student']}."
+        if sped_supports:
+            expected_labels = [
+                str(item.get("student", "")).strip()
+                for item in sped_supports
+                if str(item.get("student", "")).strip()
+            ]
+            if not compact_view.get("iep_students_line"):
+                return False, f"{session['session_label']} is missing the locked IEP Students line in the compact render."
+
+            matrix_rows = compact_view.get("accommodations_matrix_rows", [])
+            rendered_matrix_labels = [
+                str(row.get("student", "")).strip()
+                for row in matrix_rows
+                if str(row.get("student", "")).strip()
+            ]
+            if rendered_matrix_labels != expected_labels:
+                return False, f"{session['session_label']} dropped one or more initials from the IEP accommodations matrix."
+
+            procedure_rows = {
+                str(row.get("phase_time", "")).split("\n", 1)[0].strip(): row
+                for row in compact_view.get("procedure_rows", [])
+            }
+            collaborative_row = procedure_rows.get("Collaborative Practice")
+            independent_row = procedure_rows.get("Independent Practice")
+            if not collaborative_row or not independent_row:
+                return False, f"{session['session_label']} is missing the collaborative or independent procedures row needed for SPED modifications."
+
+            for label in expected_labels:
+                if not any(str(line).startswith(f"{label}:") for line in collaborative_row.get("sped_supports", [])):
+                    return False, f"{session['session_label']} dropped {label} from collaborative-practice SPED modifications."
+                if not any(str(line).startswith(f"{label}:") for line in independent_row.get("sped_supports", [])):
+                    return False, f"{session['session_label']} dropped {label} from independent-practice SPED modifications."
+
+            if any(student_requires_small_group(item) for item in sped_supports):
+                small_group_blob = serialize_payload_strings(
+                    collaborative_row.get("teacher_moves", [])
+                    + collaborative_row.get("student_moves", [])
+                    + independent_row.get("teacher_moves", [])
+                    + independent_row.get("student_moves", [])
+                ).lower()
+                if "small group" not in small_group_blob:
+                    return False, f"{session['session_label']} is missing a source-grounded small-group lesson move for the students who require it."
         for esol_support in supports.get("esol", []):
             if len(esol_support) > 180:
                 return False, f"{session['session_label']} contains an ESOL support that is too long to be classroom-usable."
-    return True, "SPED supports use the approved mapping and ESOL supports stay concise."
+    return True, "SPED supports keep initials, matrix entries, lesson-phase modifications, and small-group moves locked while ESOL supports stay concise."
 
 
 def validate_appendix(lesson_plan: dict[str, Any], raw_deck: dict[str, Any]) -> tuple[bool, str]:

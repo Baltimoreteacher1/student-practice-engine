@@ -95,6 +95,7 @@ def selfTest(config: dict[str, object]) -> None:
 def applyEnvironmentOverrides(config: dict[str, object]) -> dict[str, object]:
     watch_dir = os.environ.get("EDUWONDERLAB_WATCH_DIR", "").strip()
     output_dir = os.environ.get("EDUWONDERLAB_OUTPUT_DIR", "").strip()
+    teacher_name = os.environ.get("EDUWONDERLAB_TEACHER_NAME", "").strip()
     if watch_dir:
         config["input"]["slides_dir"] = watch_dir
         config["input"]["agenda_dir"] = str(Path(watch_dir) / "agenda")
@@ -108,6 +109,8 @@ def applyEnvironmentOverrides(config: dict[str, object]) -> dict[str, object]:
         config["output"]["markdown"] = str(output_root / "lesson_plan.md")
         config["output"]["docx"] = str(output_root / "lesson_plan.docx")
         config["output"]["validation_report"] = str(output_root / "validation_report.md")
+    if teacher_name:
+        config["teacher_name"] = teacher_name
     return config
 
 
@@ -191,7 +194,7 @@ def main() -> int:
                 "Validation failed before rendering. Review output/validation_report.md for details."
             )
 
-        render_markdown(lesson_plan, template_md_path, lesson_md_path)
+        render_markdown(lesson_plan, template_md_path, lesson_md_path, config)
         rendered_docx_paths = render_docx(lesson_plan, template_docx_path, lesson_docx_path, config)
 
         validation_payload["output_file_status"] = {

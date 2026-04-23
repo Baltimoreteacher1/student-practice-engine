@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
-from utils import LessonPlanError, unique_preserve
+from utils import LessonPlanError, clean_line, unique_preserve
 
 
 APPROVED_SUPPORT_MAPPING: dict[str, list[str]] = {
@@ -24,20 +24,25 @@ PHASE_KEYS = [
 ]
 
 
+def student_requires_small_group(item: Mapping[str, Any]) -> bool:
+    profile = str(item.get("profile", "")).strip()
+    approved_supports = APPROVED_SUPPORT_MAPPING.get(profile, [])
+    support_candidates = list(item.get("supports", [])) + [item.get("matrix_supports", "")] + approved_supports
+    return any("small group" in clean_line(str(value)).lower() for value in support_candidates)
+
+
 def apply_supports(lesson_plan: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
-    active_students = unique_preserve(config.get("active_student_supports", []))
-    invalid_students = [student for student in active_students if student not in APPROVED_SUPPORT_MAPPING]
-    if invalid_students:
-        joined = ", ".join(invalid_students)
-        raise LessonPlanError(f"Unsupported support profile ids in active_student_supports: {joined}")
+    roster = build_support_roster(config)
 
     for session in lesson_plan.get("sessions", []):
         sped_supports = [
             {
-                "student": student,
-                "supports": APPROVED_SUPPORT_MAPPING[student],
+                "student": item["label"],
+                "profile": item["profile"],
+                "supports": item["supports"],
+                "matrix_supports": item["matrix_supports"],
             }
-            for student in active_students
+            for item in roster
         ]
         esol_supports = build_esol_supports(session, config)
         session["differentiation_sped_esol_supports_and_teacher_notes"]["sped"] = sped_supports
@@ -52,6 +57,55 @@ def apply_supports(lesson_plan: dict[str, Any], config: dict[str, Any]) -> dict[
             session[phase_key]["embedded_supports"] = build_embedded_supports(session[phase_key], sped_supports, esol_supports)
 
     return lesson_plan
+
+
+def build_support_roster(config: dict[str, Any]) -> list[dict[str, str]]:
+    assignments = config.get("student_support_assignments", [])
+    if assignments:
+        roster: list[dict[str, Any]] = []
+        invalid_profiles: list[str] = []
+        for item in assignments:
+            label = str(item.get("label", "")).strip()
+            profile = str(item.get("profile", "")).strip()
+            if not label or not profile:
+                raise LessonPlanError("Each student_support_assignments entry needs both 'label' and 'profile'.")
+            if profile not in APPROVED_SUPPORT_MAPPING:
+                invalid_profiles.append(profile)
+                continue
+            custom_supports = [
+                str(value).strip()
+                for value in item.get("supports", [])
+                if str(value).strip()
+            ]
+            matrix_supports = str(item.get("matrix_supports", "")).strip()
+            resolved_supports = custom_supports or APPROVED_SUPPORT_MAPPING[profile]
+            roster.append(
+                {
+                    "label": label,
+                    "profile": profile,
+                    "supports": resolved_supports,
+                    "matrix_supports": matrix_supports or ", ".join(resolved_supports),
+                }
+            )
+        if invalid_profiles:
+            joined = ", ".join(unique_preserve(invalid_profiles))
+            raise LessonPlanError(f"Unsupported support profile ids in student_support_assignments: {joined}")
+        return roster
+
+    active_profiles = unique_preserve(config.get("active_student_supports", []))
+    invalid_profiles = [student for student in active_profiles if student not in APPROVED_SUPPORT_MAPPING]
+    if invalid_profiles:
+        joined = ", ".join(invalid_profiles)
+        raise LessonPlanError(f"Unsupported support profile ids in active_student_supports: {joined}")
+    return [
+        {
+            "label": profile,
+            "profile": profile,
+            "supports": APPROVED_SUPPORT_MAPPING[profile],
+            "matrix_supports": ", ".join(APPROVED_SUPPORT_MAPPING[profile]),
+        }
+        for profile in active_profiles
+    ]
 
 
 def build_esol_supports(session: dict[str, Any], config: dict[str, Any]) -> list[str]:
