@@ -271,8 +271,9 @@ class NotebookSession1PivotTests(unittest.TestCase):
             outputs = render_plan(plan, sample_deck(), output_dir)
             report = build_rendered_quality_report(plan, outputs)
 
-            self.assertEqual(set(outputs.keys()), {"session1"})
+            self.assertEqual(set(outputs.keys()), {"session1", "html_notebook"})
             self.assertTrue(outputs["session1"].exists())
+            self.assertTrue(outputs["html_notebook"].exists())
             self.assertEqual(set(report["sessions"].keys()), {"Session 1"})
 
     def test_build_result_links_omits_session2_when_not_rendered(self) -> None:
@@ -311,6 +312,7 @@ class NotebookSession1PivotTests(unittest.TestCase):
                 "plan": job_dir / "notebook_plan.json",
                 "deck": job_dir / "source_deck.json",
                 "quality_report": job_dir / "quality_report.json",
+                "html_notebook": job_dir / "Interactive Student Notebook.html",
             }
             for path in files.values():
                 if path.suffix == ".pptx":
@@ -326,6 +328,7 @@ class NotebookSession1PivotTests(unittest.TestCase):
                     "plan": files["plan"].name,
                     "deck": files["deck"].name,
                     "quality_report": files["quality_report"].name,
+                    "html_notebook": files["html_notebook"].name,
                 },
             }
 
@@ -333,8 +336,79 @@ class NotebookSession1PivotTests(unittest.TestCase):
                 copied = copy_job_outputs(job, output_dir)
 
             self.assertIn("session1", copied)
+            self.assertIn("session1_output", copied)
+            self.assertIn("html_notebook", copied)
+            self.assertIn("html_notebook_output", copied)
             self.assertNotIn("session2", copied)
             self.assertTrue(copied["session1"].exists())
+            self.assertTrue(copied["session1_output"].exists())
+            self.assertTrue(copied["html_notebook"].exists())
+            self.assertTrue(copied["html_notebook_output"].exists())
+            self.assertNotEqual(copied["session1"].parent, output_dir)
+            self.assertEqual(copied["session1_output"].parent, output_dir)
+            self.assertEqual(copied["html_notebook_output"].parent, output_dir)
+            self.assertEqual(
+                copied["session1_output"].name,
+                "lesson-deck - Session 1 Student Notebook.pptx",
+            )
+            self.assertEqual(
+                copied["html_notebook"].name,
+                "lesson-deck - Interactive Student Notebook.html",
+            )
+            self.assertEqual(
+                copied["html_notebook_output"].name,
+                "lesson-deck - Interactive Student Notebook.html",
+            )
+
+    def test_copy_job_outputs_versions_direct_notebook_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            runs_dir = Path(tmp_dir) / "runs"
+            output_dir = Path(tmp_dir) / "output"
+            job_dir = runs_dir / "job-1"
+            job_dir.mkdir(parents=True)
+            output_dir.mkdir(parents=True)
+
+            session1 = job_dir / "session1.pptx"
+            plan = job_dir / "notebook_plan.json"
+            deck = job_dir / "source_deck.json"
+            quality = job_dir / "quality_report.json"
+            html = job_dir / "interactive.html"
+            session1.write_bytes(b"new deck")
+            plan.write_text("{}", encoding="utf-8")
+            deck.write_text("{}", encoding="utf-8")
+            quality.write_text("{}", encoding="utf-8")
+            html.write_text("<html>new</html>", encoding="utf-8")
+
+            existing_pptx = output_dir / "lesson-deck - Session 1 Student Notebook.pptx"
+            existing_html = output_dir / "lesson-deck - Interactive Student Notebook.html"
+            existing_pptx.write_bytes(b"old deck")
+            existing_html.write_text("<html>old</html>", encoding="utf-8")
+
+            job = {
+                "job_id": "job-1",
+                "source_filename": "lesson-deck.pptx",
+                "relative_files": {
+                    "session1": session1.name,
+                    "plan": plan.name,
+                    "deck": deck.name,
+                    "quality_report": quality.name,
+                    "html_notebook": html.name,
+                },
+            }
+
+            with patch("notebook_engine_app.RUNS_DIR", runs_dir):
+                copied = copy_job_outputs(job, output_dir)
+
+            self.assertEqual(
+                copied["session1_output"].name,
+                "lesson-deck - Session 1 Student Notebook (2).pptx",
+            )
+            self.assertEqual(
+                copied["html_notebook_output"].name,
+                "lesson-deck - Interactive Student Notebook (2).html",
+            )
+            self.assertEqual(existing_pptx.read_bytes(), b"old deck")
+            self.assertEqual(existing_html.read_text(encoding="utf-8"), "<html>old</html>")
 
 
 if __name__ == "__main__":

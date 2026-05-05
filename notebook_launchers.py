@@ -9,13 +9,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 DOCUMENTS_DIR = Path.home() / "Documents"
-WORKFLOW_HOME = DOCUMENTS_DIR / "Chatgpt Notebook and Lesson plans"
+CHATGPT_HOME = DOCUMENTS_DIR / "Chatgpt"
+WORKFLOW_HOME = CHATGPT_HOME / "Notebook"
+LESSON_PLAN_HOME = CHATGPT_HOME / "Lesson Plans"
 DEFAULT_INBOX_DIR = WORKFLOW_HOME / "Notebook Inbox"
 DEFAULT_OUTPUT_DIR = WORKFLOW_HOME / "Notebook Output"
 DEFAULT_ARCHIVE_DIR = WORKFLOW_HOME / "Notebook Archive"
-LESSON_PLAN_HOME = Path.home() / "EduWonderLab"
-DEFAULT_LESSON_PLAN_INBOX_DIR = LESSON_PLAN_HOME / "watch_lessonplans"
-DEFAULT_LESSON_PLAN_OUTPUT_DIR = LESSON_PLAN_HOME / "output_lessonplans"
+DEFAULT_LESSON_PLAN_INBOX_DIR = LESSON_PLAN_HOME / "Lesson Plan Inbox"
+DEFAULT_LESSON_PLAN_OUTPUT_DIR = LESSON_PLAN_HOME / "Lesson Plan Output"
 INBOX_LAUNCHER_NAME = "Launch Notebook Inbox.command"
 LESSON_PLAN_LAUNCHER_NAME = "Generate Lesson Plan.command"
 LESSON_PLAN_HELP_NAME = "DROP_PPTX_HERE.txt"
@@ -24,11 +25,14 @@ LESSON_PLAN_HELP_NAME = "DROP_PPTX_HERE.txt"
 def build_inbox_launcher_script(workspace_root: Path | None = None) -> str:
     root = (workspace_root or ROOT).resolve()
     root_quoted = shlex.quote(str(root))
+    input_dir_quoted = shlex.quote(str(DEFAULT_INBOX_DIR))
+    output_dir_quoted = shlex.quote(str(DEFAULT_OUTPUT_DIR))
+    archive_dir_quoted = shlex.quote(str(DEFAULT_ARCHIVE_DIR))
     return f"""#!/bin/zsh
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-WORKSPACE_ROOT="$SCRIPT_DIR"
+WORKSPACE_ROOT="${{EDUWONDERLAB_WORKSPACE_ROOT:-$SCRIPT_DIR}}"
 
 if [[ ! -f "$WORKSPACE_ROOT/notebook_folder_runner.py" ]]; then
   WORKSPACE_ROOT={root_quoted}
@@ -36,20 +40,52 @@ fi
 
 RUNNER="$WORKSPACE_ROOT/notebook_folder_runner.py"
 ARGS=("$@")
-OUTPUT_DIR="$HOME/Documents/Chatgpt Notebook and Lesson plans/Notebook Output"
+RUN_ARGS=("${{ARGS[@]}}")
+INPUT_DIR={input_dir_quoted}
+OUTPUT_DIR={output_dir_quoted}
+ARCHIVE_DIR={archive_dir_quoted}
+HAS_INPUT_DIR=0
+HAS_OUTPUT_DIR=0
+HAS_ARCHIVE_DIR=0
 
 index=1
 while (( index <= ${{#ARGS[@]}} )); do
   arg="${{ARGS[index]}}"
   case "$arg" in
+    --input-dir)
+      HAS_INPUT_DIR=1
+      if (( index < ${{#ARGS[@]}} )); then
+        INPUT_DIR="${{ARGS[index + 1]}}"
+      fi
+      (( index += 2 ))
+      ;;
+    --input-dir=*)
+      HAS_INPUT_DIR=1
+      INPUT_DIR="${{arg#--input-dir=}}"
+      (( index += 1 ))
+      ;;
     --output-dir)
+      HAS_OUTPUT_DIR=1
       if (( index < ${{#ARGS[@]}} )); then
         OUTPUT_DIR="${{ARGS[index + 1]}}"
       fi
       (( index += 2 ))
       ;;
     --output-dir=*)
+      HAS_OUTPUT_DIR=1
       OUTPUT_DIR="${{arg#--output-dir=}}"
+      (( index += 1 ))
+      ;;
+    --archive-dir)
+      HAS_ARCHIVE_DIR=1
+      if (( index < ${{#ARGS[@]}} )); then
+        ARCHIVE_DIR="${{ARGS[index + 1]}}"
+      fi
+      (( index += 2 ))
+      ;;
+    --archive-dir=*)
+      HAS_ARCHIVE_DIR=1
+      ARCHIVE_DIR="${{arg#--archive-dir=}}"
       (( index += 1 ))
       ;;
     *)
@@ -58,10 +94,22 @@ while (( index <= ${{#ARGS[@]}} )); do
   esac
 done
 
+if [[ "$HAS_INPUT_DIR" -eq 0 ]]; then
+  RUN_ARGS+=("--input-dir" "$INPUT_DIR")
+fi
+
+if [[ "$HAS_OUTPUT_DIR" -eq 0 ]]; then
+  RUN_ARGS+=("--output-dir" "$OUTPUT_DIR")
+fi
+
+if [[ "$HAS_ARCHIVE_DIR" -eq 0 ]]; then
+  RUN_ARGS+=("--archive-dir" "$ARCHIVE_DIR")
+fi
+
 LOG_PATH="$OUTPUT_DIR/notebook_inbox_last_run.log"
 SUMMARY_PATH="$OUTPUT_DIR/notebook_inbox_last_run.json"
 
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$INPUT_DIR" "$OUTPUT_DIR" "$ARCHIVE_DIR"
 export PYTHONUNBUFFERED=1
 
 if [[ -n "${{OPENAI_API_KEY:-}}" ]]; then
@@ -81,8 +129,10 @@ if [[ -z "${{SSL_CERT_FILE:-}}" ]]; then
 fi
 
 echo "Running notebook inbox processor..."
+echo "Inbox: $INPUT_DIR"
+echo "Output: $OUTPUT_DIR"
 echo "Log: $LOG_PATH"
-python3 "$RUNNER" "${{ARGS[@]}}"
+python3 "$RUNNER" "${{RUN_ARGS[@]}}"
 STATUS=$?
 echo
 echo "Latest log: $LOG_PATH"
@@ -109,15 +159,23 @@ print(f"Run status: {{status}}")
 print(f"Processed decks: {{processed_count}}")
 
 if status == "completed":
-    if processed_count == 1 and results and results[0].get("export_dir"):
-        print(f"Notebook folder: {{results[0]['export_dir']}}")
-    elif output_dir:
-        print(f"Notebook folder: {{output_dir}}")
+    for result in results:
+        notebook_path = result.get("session1_output") or result.get("session1")
+        if notebook_path:
+            print(f"Notebook file: {{notebook_path}}")
+    if output_dir:
+        print(f"Notebook output folder: {{output_dir}}")
+    elif processed_count == 1 and results and results[0].get("export_dir"):
+        print(f"Notebook package: {{results[0]['export_dir']}}")
 elif status == "no_files":
     print("No PPTX files were found in the inbox.")
 elif status == "failed":
     reason = payload.get("reason") or payload.get("error") or "unknown_error"
-    print(f"Failure reason: {{reason}}")
+    reason_text = str(reason)
+    if "insufficient_quota" in reason_text or "OpenAI API error 429" in reason_text:
+        print("Failure reason: OpenAI API quota was exceeded. No notebook was generated.")
+    else:
+        print(f"Failure reason: {{reason_text}}")
 PY
 fi
 
@@ -137,10 +195,10 @@ if payload.get("status") != "completed":
     raise SystemExit(0)
 
 results = payload.get("results") or []
-if len(results) == 1 and results[0].get("export_dir"):
-    print(results[0]["export_dir"])
-elif payload.get("output_dir"):
+if payload.get("output_dir"):
     print(payload["output_dir"])
+elif len(results) == 1 and results[0].get("export_dir"):
+    print(results[0]["export_dir"])
 PY
 )"
   if [[ -n "$OPEN_TARGET" ]]; then
@@ -171,56 +229,30 @@ def ensure_inbox_launcher(
 def build_lesson_plan_launcher_script(workspace_root: Path | None = None) -> str:
     root = (workspace_root or ROOT).resolve()
     root_quoted = shlex.quote(str(root))
-    watch_dir_quoted = shlex.quote(str(DEFAULT_LESSON_PLAN_INBOX_DIR))
     output_dir_quoted = shlex.quote(str(DEFAULT_LESSON_PLAN_OUTPUT_DIR))
     return f"""#!/bin/zsh
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORKSPACE_ROOT={root_quoted}
-PROJECT_ROOT="$WORKSPACE_ROOT/codex-lesson-plan-generator"
-WATCH_DIR="${{EDUWONDERLAB_WATCH_DIR:-{watch_dir_quoted}}}"
-OUTPUT_DIR="${{EDUWONDERLAB_OUTPUT_DIR:-{output_dir_quoted}}}"
+ROOT_LAUNCHER="$WORKSPACE_ROOT/Generate Lesson Plan.command"
+DEFAULT_OUTPUT_DIR={output_dir_quoted}
+WATCH_DIR="${{EDUWONDERLAB_WATCH_DIR:-$SCRIPT_DIR}}"
+OUTPUT_DIR="${{EDUWONDERLAB_OUTPUT_DIR:-$DEFAULT_OUTPUT_DIR}}"
 
-if [[ ! -f "$PROJECT_ROOT/run.js" ]]; then
-  echo "Lesson plan generator was not found at: $PROJECT_ROOT"
-  exit 1
-fi
-
-if ! command -v node >/dev/null 2>&1; then
-  echo "Node.js is required to run the lesson plan generator."
-  exit 1
-fi
-
-if ! command -v npm >/dev/null 2>&1; then
-  echo "npm is required to install lesson plan generator dependencies."
+if [[ ! -f "$ROOT_LAUNCHER" ]]; then
+  echo "Lesson plan launcher was not found at: $ROOT_LAUNCHER"
   exit 1
 fi
 
 mkdir -p "$WATCH_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-cd "$PROJECT_ROOT"
-if ! node -e "require.resolve('docx'); require.resolve('jszip')" >/dev/null 2>&1; then
-  echo "Installing lesson plan dependencies..."
-  npm install >/dev/null 2>&1 || npm install docx >/dev/null 2>&1
-fi
+export EDUWONDERLAB_WORKSPACE_ROOT="$WORKSPACE_ROOT"
+export EDUWONDERLAB_WATCH_DIR="$WATCH_DIR"
+export EDUWONDERLAB_OUTPUT_DIR="$OUTPUT_DIR"
 
-echo "Running lesson plan generator..."
-echo "Input folder: $WATCH_DIR"
-echo "Lesson plan output: $OUTPUT_DIR"
-node run.js "$@"
-STATUS=$?
-echo
-echo "Lesson plan output: $OUTPUT_DIR"
-
-if [[ $STATUS -eq 0 ]]; then
-  if [[ -z "${{LESSON_PLAN_NO_OPEN:-}}" ]]; then
-    open "$OUTPUT_DIR" >/dev/null 2>&1 || true
-  fi
-fi
-
-exit $STATUS
+exec "$ROOT_LAUNCHER" "$@"
 """
 
 
@@ -229,17 +261,13 @@ def build_lesson_plan_help_text() -> str:
 
 Generate Lesson Plan.command
 
-If you want to run from Terminal instead:
-
-node run.js
-
-The generator reads from:
-
-~/EduWonderLab/watch_lessonplans
+The generator reads the deck from this Lesson Plan Inbox folder.
 
 Finished lesson plans are saved in:
 
-~/EduWonderLab/output_lessonplans
+~/Documents/Chatgpt/Lesson Plans/Lesson Plan Output
+
+Expected outputs include dated Session .docx files, lesson_plan.md, lesson_plan.html, lesson_plan.json, and validation_report.md.
 """
 
 

@@ -101,7 +101,7 @@ def merged_guidance(config_guidance: str, extra_guidance: str) -> str:
     )
 
 
-def copy_job_outputs(job: dict[str, Any], output_dir: Path) -> dict[str, Path]:
+def copy_job_outputs(job: dict[str, Any], output_dir: Path) -> dict[str, Any]:
     job_id = job["job_id"]
     source_filename = job["source_filename"]
     from notebook_engine_app import RUNS_DIR
@@ -136,12 +136,31 @@ def copy_job_outputs(job: dict[str, Any], output_dir: Path) -> dict[str, Path]:
         "quality_report": quality_dest,
         "manifest": manifest_dest,
     }
+
+    session1_output = unique_path(output_dir / session1_dest.name)
+    shutil.copy2(session1_dest, session1_output)
+    copied["session1_output"] = session1_output
+
     session2_relative = job["relative_files"].get("session2")
     if session2_relative:
         session2_src = job_dir / session2_relative
         session2_dest = export_dir / f"{deck_stem} - Session 2 Student Notebook.pptx"
         shutil.copy2(session2_src, session2_dest)
         copied["session2"] = session2_dest
+        session2_output = unique_path(output_dir / session2_dest.name)
+        shutil.copy2(session2_dest, session2_output)
+        copied["session2_output"] = session2_output
+
+    html_relative = job["relative_files"].get("html_notebook")
+    if html_relative:
+        html_src = job_dir / html_relative
+        html_dest = export_dir / f"{deck_stem} - Interactive Student Notebook.html"
+        shutil.copy2(html_src, html_dest)
+        copied["html_notebook"] = html_dest
+        html_output = unique_path(output_dir / html_dest.name)
+        shutil.copy2(html_dest, html_output)
+        copied["html_notebook_output"] = html_output
+
     return copied
 
 
@@ -179,14 +198,31 @@ def process_deck(
             f"{mode_label.title()} notebook generation failed for {source_path.name}: {exc}"
         ) from exc
     copied = copy_job_outputs(job, output_dir)
-    log_line(f"  Session 1: {copied['session1']}", log_path)
+    log_line(
+        f"  Session 1 output: {copied.get('session1_output', copied['session1'])}",
+        log_path,
+    )
+    log_line(f"  Notebook package: {copied['export_dir']}", log_path)
     if copied.get("session2"):
-        log_line(f"  Session 2: {copied['session2']}", log_path)
+        log_line(
+            f"  Session 2 output: {copied.get('session2_output', copied['session2'])}",
+            log_path,
+        )
+    if copied.get("html_notebook"):
+        log_line(
+            "  HTML Web App output: "
+            f"{copied.get('html_notebook_output', copied['html_notebook'])}",
+            log_path,
+        )
     log_line(f"  Quality report: {copied['quality_report']}", log_path)
     if not job.get("quality_passed", False):
         raise RuntimeError("Generated notebook failed the production quality validation gate.")
-    archived_path = archive_source(source_path, archive_dir)
-    log_line(f"  Archived source: {archived_path}", log_path)
+    try:
+        archived_path = archive_source(source_path, archive_dir)
+        log_line(f"  Archived source: {archived_path}", log_path)
+    except FileNotFoundError:
+        archived_path = source_path
+        log_line(f"  Source deleted from inbox before archiving.", log_path)
     return {
         "job": job,
         "copied": copied,
@@ -313,12 +349,60 @@ def main() -> int:
                             {
                                 "source_filename": result["job"]["source_filename"],
                                 "fallback_mode": result["job"].get("fallback_mode", ""),
-                                "session1": str(result["copied"]["session1"]),
+                                "session1": str(
+                                    result["copied"].get(
+                                        "session1_output", result["copied"]["session1"]
+                                    )
+                                ),
+                                "session1_output": str(
+                                    result["copied"].get(
+                                        "session1_output", result["copied"]["session1"]
+                                    )
+                                ),
+                                "session1_package": str(result["copied"]["session1"]),
+                                "quality_report": str(result["copied"]["quality_report"]),
                                 "export_dir": str(result["copied"]["export_dir"]),
                                 "archived_source": str(result["archived_source"]),
                                 **(
-                                    {"session2": str(result["copied"]["session2"])}
+                                    {
+                                        "session2": str(
+                                            result["copied"].get(
+                                                "session2_output",
+                                                result["copied"]["session2"],
+                                            )
+                                        ),
+                                        "session2_output": str(
+                                            result["copied"].get(
+                                                "session2_output",
+                                                result["copied"]["session2"],
+                                            )
+                                        ),
+                                        "session2_package": str(
+                                            result["copied"]["session2"]
+                                        ),
+                                    }
                                     if result["copied"].get("session2")
+                                    else {}
+                                ),
+                                **(
+                                    {
+                                        "html_notebook": str(
+                                            result["copied"].get(
+                                                "html_notebook_output",
+                                                result["copied"]["html_notebook"],
+                                            )
+                                        ),
+                                        "html_notebook_output": str(
+                                            result["copied"].get(
+                                                "html_notebook_output",
+                                                result["copied"]["html_notebook"],
+                                            )
+                                        ),
+                                        "html_notebook_package": str(
+                                            result["copied"]["html_notebook"]
+                                        ),
+                                    }
+                                    if result["copied"].get("html_notebook")
                                     else {}
                                 ),
                             }
