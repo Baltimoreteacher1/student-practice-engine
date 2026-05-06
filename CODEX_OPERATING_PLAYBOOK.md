@@ -51,7 +51,6 @@ The workspace root still contains a few preserved live entrypoints. Treat these 
 
 - `Generate Lesson Plan.command`
 - `Launch Notebook Inbox.command`
-- `process_notebook_inbox.command`
 - `launch_notebook_engine.command`
 - `notebook_engine.py`
 - `notebook_engine_app.py`

@@ -59,7 +59,6 @@ Treat the workspace root as a thin runtime surface, not a general script dump. T
 
 - `Generate Lesson Plan.command`
 - `Launch Notebook Inbox.command`
-- `process_notebook_inbox.command`
 - `launch_notebook_engine.command`
 - `notebook_engine.py`
 - `notebook_engine_app.py`

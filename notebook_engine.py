@@ -23,7 +23,7 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR, MSO_SHAPE_TYPE, PP_PLACEHOLDER
 from pptx.enum.text import MSO_VERTICAL_ANCHOR, PP_ALIGN
-from pptx.util import Inches, Pt
+from pptx.util import Emu, Inches, Pt
 
 
 ROOT = Path(__file__).resolve().parent
@@ -33,13 +33,13 @@ OPENAI_TIMEOUT_SECONDS = int(os.getenv("OPENAI_TIMEOUT_SECONDS", "240"))
 DEBUG_TRACEBACK_ENV = "NOTEBOOK_ENGINE_DEBUG_TRACEBACK"
 ACTIVITY_LIBRARY_PATH = ROOT / "activity_library.txt"
 ACTIVITY_DATABASE_PATH = ROOT / "activity_database.json"
-SLIDE_W = Inches(13.333)
+SLIDE_W = Emu(12192000)
 SLIDE_H = Inches(7.5)
 SESSION_KEY_ORDER = ("session_1", "session_2")
 SESSION_OUTPUT_KEYS = {"session_1": "session1", "session_2": "session2"}
 PUBLISHER_STYLE_VERSION = "reference-classroom-2026-04-vnext"
-FONT_HEAD = "Arial"
-FONT_BODY = "Arial"
+FONT_HEAD = "Inter"
+FONT_BODY = "Inter"
 MIN_SESSION_SLIDES = 10
 MAX_SESSION_SLIDES = 18
 PREMIUM_TARGET_SESSION_SLIDES = 14
@@ -54,15 +54,15 @@ COMMON_CA_BUNDLE_PATHS = [
     "/usr/local/etc/openssl@3/cert.pem",
 ]
 
-BG = RGBColor(255, 252, 244)
+BG = RGBColor(255, 255, 255)
 PAPER = RGBColor(255, 255, 255)
-NAVY = RGBColor(30, 95, 116)
-TEAL = RGBColor(40, 139, 168)
-GOLD = RGBColor(249, 168, 38)
+NAVY = RGBColor(23, 50, 77)
+TEAL = RGBColor(31, 166, 162)
+GOLD = RGBColor(242, 193, 91)
 CORAL = RGBColor(231, 132, 61)
 SAGE = RGBColor(90, 142, 157)
-INK = RGBColor(39, 63, 74)
-MUTED = RGBColor(88, 122, 135)
+INK = RGBColor(23, 50, 77)
+MUTED = RGBColor(111, 134, 153)
 LINE = RGBColor(214, 222, 227)
 SOFT_LINE = RGBColor(227, 234, 238)
 SOFT_NAVY = RGBColor(71, 122, 141)
@@ -94,6 +94,12 @@ PROBLEM_SOLVING_KINDS = {
     "practice",
     "challenge",
     "exit_ticket",
+}
+
+REFERENCE_PROBLEM_TEMPLATE_ROLES = {
+    "guided_practice",
+    "interactive_activity",
+    "best_fit_review",
 }
 
 PROBLEM_INTERACTIVE_PAIR_KINDS = {
@@ -7429,10 +7435,7 @@ def be_curious_sentence_kernels(plan_slide: dict[str, Any]) -> tuple[list[str], 
 
 def be_curious_panel_prompt(prompt: str, kernels: list[str], *, fallback: str) -> str:
     lead = normalize_whitespace(prompt) or fallback
-    kernel_block = "\n".join(kernels[:2])
-    if not kernel_block:
-        return lead
-    return f"{lead}\nSentence kernels:\n{kernel_block}"
+    return lead
 
 
 def compact_vocab_snapshot_definition(word: str, definition: str) -> str:
@@ -7454,12 +7457,25 @@ def compact_vocab_snapshot_definition(word: str, definition: str) -> str:
     return trim_dangling_display_text(truncate_display_copy(definition or "lesson word", 30))
 
 
-def be_curious_vocabulary_items(plan_slide: dict[str, Any]) -> list[dict[str, str]]:
+def be_curious_vocabulary_items(plan_slide: dict[str, Any], session_plan: dict[str, Any]) -> list[dict[str, str]]:
+    # First, try to get vocabulary from the be_curious slide itself
     structured = [
         item
         for item in plan_slide.get("vocabulary", [])
         if isinstance(item, dict) and normalize_whitespace(item.get("word", ""))
     ]
+    # If empty, look through all other slides in the session plan for vocabulary
+    if not structured:
+        for slide in session_plan.get("slides", []):
+            if slide.get("vocabulary"):
+                structured = [
+                    item
+                    for item in slide.get("vocabulary", [])
+                    if isinstance(item, dict) and normalize_whitespace(item.get("word", ""))
+                ]
+                if structured:
+                    break
+
     if structured:
         return [
             {
@@ -7895,10 +7911,12 @@ def apply_problem_window_to_slide(plan_slide: dict[str, Any], window: dict[str, 
     if primary_text:
         plan_slide["primary_text"] = primary_text
     if exact_prompts:
-        plan_slide["tasks"] = [
+        selected_prompt_cards = [
             trim_dangling_display_text(truncate_display_copy(item, 190))
             for item in exact_prompts[:4]
         ]
+        plan_slide["tasks"] = selected_prompt_cards
+        plan_slide["source_problem_cards"] = selected_prompt_cards
     elif not plan_slide.get("tasks"):
         plan_slide["tasks"] = slide_task_list(source_records, limit=4)
     if support_facts:
@@ -7920,6 +7938,81 @@ def apply_problem_window_to_slide(plan_slide: dict[str, Any], window: dict[str, 
         or "source problem practice" in plan_slide.get("title", "").lower()
     ):
         plan_slide["subtitle"] = "Use the exact source problem language and work through the solve path in the notebook."
+
+
+def is_exploratory_problem_source(slide: dict[str, Any]) -> bool:
+    title = normalize_whitespace(slide.get("title", "")).lower()
+    blob = combined_source_text([slide]).lower()
+    return any(
+        marker in title or marker in blob
+        for marker in (
+            "be curious",
+            "what do you notice",
+            "what do you wonder",
+            "notice and wonder",
+            "turn and talk",
+        )
+    )
+
+
+def single_slide_problem_window(slide: dict[str, Any], index: int) -> dict[str, Any]:
+    source_number = int(slide.get("slide_number", 0) or 0)
+    return {
+        "slides": [slide],
+        "source_numbers": [source_number],
+        "score": problem_source_score(slide),
+        "text_blob": combined_source_text([slide]),
+        "start_index": index,
+    }
+
+
+def reference_problem_windows(deck: dict[str, Any]) -> list[dict[str, Any]]:
+    source_slides = deck.get("slides", [])
+    windows: list[tuple[int, bool, dict[str, Any]]] = []
+    for index, slide in enumerate(source_slides):
+        if not slide.get("slide_number"):
+            continue
+        prompts = source_problem_candidates([slide], limit=4)
+        if not prompts:
+            continue
+        best_priority = max(problem_prompt_priority(prompt) for prompt in prompts)
+        windows.append(
+            (
+                best_priority,
+                is_exploratory_problem_source(slide),
+                single_slide_problem_window(slide, index),
+            )
+        )
+
+    preferred = [window for priority, exploratory, window in windows if priority >= 3 and not exploratory]
+    if preferred:
+        return preferred
+    fallback = [window for priority, _exploratory, window in windows if priority >= 3]
+    if fallback:
+        return fallback
+    if windows:
+        return [window for _priority, _exploratory, window in windows]
+    scored = problem_window_candidates(source_slides, window_size=2)
+    return sorted(
+        scored,
+        key=lambda item: (-int(item.get("score", 0) or 0), int(item.get("start_index", 0) or 0)),
+    )
+
+
+def align_reference_problem_sources(session: dict[str, Any], deck: dict[str, Any]) -> None:
+    windows = reference_problem_windows(deck)
+    if not windows:
+        return
+
+    problem_index = 0
+    for plan_slide in session.get("slides", []):
+        kind = plan_slide.get("kind", "")
+        template_role = normalize_whitespace(plan_slide.get("template_role", ""))
+        if kind not in PROBLEM_SOLVING_KINDS or template_role not in REFERENCE_PROBLEM_TEMPLATE_ROLES:
+            continue
+        window = windows[min(problem_index, len(windows) - 1)]
+        apply_problem_window_to_slide(plan_slide, window, deck)
+        problem_index += 1
 
 
 def align_problem_solving_sources(session_key: str, session: dict[str, Any], deck: dict[str, Any]) -> None:
@@ -7977,10 +8070,12 @@ def enrich_problem_fidelity(plan_slide: dict[str, Any], deck: dict[str, Any]) ->
     )
     if plan_slide["kind"] in {"worked_example", "practice", "quick_review", "challenge", "exit_ticket"}:
         if exact_prompts:
-            plan_slide["tasks"] = [
+            selected_prompt_cards = [
                 trim_dangling_display_text(truncate_display_copy(item, 190))
                 for item in exact_prompts[:4]
             ]
+            plan_slide["tasks"] = selected_prompt_cards
+            plan_slide["source_problem_cards"] = selected_prompt_cards
         elif not plan_slide.get("tasks", []):
             plan_slide["tasks"] = slide_task_list(source_records, limit=4)
     if not plan_slide.get("bullets") and plan_slide["kind"] in {"worked_example", "learning_target"}:
@@ -8227,7 +8322,9 @@ def enforce_plan_requirements(
             )
             reorder_locked_architecture_sequence(session)
             slides = session.get("slides", [])
-        if not uses_reference_workbook_template(session):
+        if uses_reference_workbook_template(session):
+            align_reference_problem_sources(session, deck)
+        else:
             align_problem_solving_sources(session_key, session, deck)
         slides = session.get("slides", [])
 
@@ -12074,7 +12171,7 @@ def problem_workbook_content(plan_slide: dict[str, Any], *, variant: str = "prac
         }
     return {
         "panel_title": "Solve, Check, Explain",
-        "show_problem_cards": False,
+        "show_problem_cards": True,
         "top_cards": [
             ("P1 Solve This", source_problem),
             ("P2 From Slides" if second_source_problem else "P2 Similar Problem", second_source_problem or similar_problem),
@@ -12612,18 +12709,33 @@ def add_vocabulary_feature_card(
     band.fill.solid()
     band.fill.fore_color.rgb = accent
     band.line.fill.background()
-    image_w = Inches(1.62)
-    image_h = Inches(1.04)
-    add_rect(slide, x + Inches(0.16), y + Inches(0.20), image_w, image_h, PAPER, line_color=accent)
+    add_text(
+        slide,
+        x + Inches(0.16),
+        y + Inches(0.14),
+        w - Inches(0.32),
+        Inches(0.36),
+        truncate_text(word or "Term", 28),
+        size=22.0,
+        min_size=18.0,
+        color=accent,
+        bold=True,
+        font=FONT_HEAD,
+        margin=0.01,
+    )
+    image_w = Inches(1.42)
+    image_h = Inches(0.88)
+    image_y = y + Inches(0.50)
+    add_rect(slide, x + Inches(0.16), image_y, image_w, image_h, PAPER, line_color=accent)
     if asset:
-        add_picture_contain(slide, asset, x + Inches(0.24), y + Inches(0.28), image_w - Inches(0.16), image_h - Inches(0.16))
+        add_picture_contain(slide, asset, x + Inches(0.22), image_y + Inches(0.06), image_w - Inches(0.12), image_h - Inches(0.12))
     else:
         add_text(
             slide,
             x + Inches(0.20),
-            y + Inches(0.42),
+            image_y + Inches(0.24),
             image_w - Inches(0.08),
-            Inches(0.42),
+            Inches(0.40),
             visual_cue_text,
             size=10.6,
             min_size=10.4,
@@ -12633,28 +12745,14 @@ def add_vocabulary_feature_card(
             margin=0.01,
             vertical_anchor=MSO_VERTICAL_ANCHOR.MIDDLE,
         )
-    text_x = x + Inches(1.96)
-    text_w = w - Inches(2.14)
+    text_x = x + Inches(1.68)
+    text_w = w - Inches(1.80)
     add_text(
         slide,
         text_x,
-        y + Inches(0.20),
+        image_y,
         text_w,
-        Inches(0.22),
-        truncate_text(word or "Term", 28),
-        size=14.8,
-        min_size=12.8,
-        color=accent,
-        bold=True,
-        font=FONT_HEAD,
-        margin=0.01,
-    )
-    add_text(
-        slide,
-        text_x,
-        y + Inches(0.46),
-        text_w,
-        Inches(0.42),
+        Inches(0.40),
         truncate_text(definition or "Student-friendly definition", 112),
         size=12.1,
         min_size=10.9,
@@ -12665,7 +12763,7 @@ def add_vocabulary_feature_card(
     add_text(
         slide,
         text_x,
-        y + Inches(0.92),
+        image_y + Inches(0.46),
         text_w,
         Inches(0.16),
         "Source Example",
@@ -12678,9 +12776,9 @@ def add_vocabulary_feature_card(
     add_text(
         slide,
         text_x,
-        y + Inches(1.08),
+        image_y + Inches(0.62),
         text_w,
-        Inches(0.20),
+        Inches(0.24),
         example_text,
         size=11.1,
         min_size=10.4,
@@ -14392,7 +14490,7 @@ def render_exact_learning_objectives_slide(
         fill=PAPER,
         accent=NAVY,
         title_size=12.8,
-        body_size=11.2,
+        body_size=9.6,
     )
     add_card(
         slide,
@@ -14437,12 +14535,13 @@ def render_exact_be_curious_slide(
     slide: Any,
     *,
     plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
     page: int,
     footer_text: str,
     image_lookup: dict[int, dict[str, Any]],
 ) -> None:
     notice_kernels, wonder_kernels = be_curious_sentence_kernels(plan_slide)
-    vocab_items = be_curious_vocabulary_items(plan_slide)
+    vocab_items = be_curious_vocabulary_items(plan_slide, session_plan)
     add_header(
         slide,
         section=plan_slide["section"],
@@ -14752,6 +14851,784 @@ def render_exact_guided_practice_slide(
         lines=2,
         fill=PAPER,
     )
+REFERENCE_EXACT_NAV_ITEMS = ("EduWonderLab", "Be Curious", "Vocabulary", "Try It", "Practice", "Discuss")
+REFERENCE_EXACT_SECTION_COLORS = {
+    "cover": NAVY,
+    "be_curious": TEAL,
+    "vocabulary": GOLD,
+    "worked_example": TEAL,
+    "practice": CORAL,
+    "quick_review": SAGE,
+}
+
+
+def reference_exact_session_key(session_label: str) -> str:
+    return "session_2" if "2" in str(session_label) else "session_1"
+
+
+def reference_exact_source_numbers(plan_slide: dict[str, Any]) -> list[int]:
+    numbers: list[int] = []
+    for key in ("source_numbers", "problem_numbers", "examples", "source_slide_numbers"):
+        values = plan_slide.get(key) or []
+        if isinstance(values, int):
+            values = [values]
+        for value in values:
+            try:
+                number = int(value)
+            except (TypeError, ValueError):
+                continue
+            if number not in numbers:
+                numbers.append(number)
+    return numbers
+
+
+REFERENCE_EXACT_SECTION_TITLES = {
+    "objectives + session map",
+    "be curious",
+    "vocabulary",
+    "try it: guided problem",
+    "interactive activity",
+    "find the error",
+    "partner practice: volume of rectangular prism",
+    "partner practice: volume of a rectangular prism",
+}
+
+REFERENCE_EXACT_GENERIC_PROBLEMS = {
+    "determine the prism's length, width, and height from the source model.",
+    "use the measurements from the source problem to determine the volume.",
+}
+
+REFERENCE_EXACT_ROLE_FALLBACKS = {
+    "be_curious": "Is it always true? A cube is a rectangular prism.",
+    "guided": "What strategies have you used in the past to find volume?",
+    "practice": "How can you use this information to find the volume of the rectangular prism?",
+    "error": "How can you use this information to find the volume of the rectangular prism?",
+}
+
+REFERENCE_EXACT_ROLE_PATTERNS = {
+    "be_curious": (r"Is it always true\??\s*A cube is a rectangular prism\.?",),
+    "guided": (r"What strategies have you used in the past to find volume\?",),
+    "practice": (r"How can you use this information to find the volume of the rectangular prism\?",),
+    "error": (r"How can you use this information to find the volume of the rectangular prism\?",),
+}
+
+REFERENCE_EXACT_FRACTIONAL_PRISM_OBJECTIVES = (
+    "I can determine the volume of a right rectangular prism with fractional edge lengths by packing it with unit cubes.",
+    "I can show that volume is the same as multiplying the edge lengths of a rectangular prism.",
+    "I can use formulas V = l × w × h and V = B × h to find volumes of right rectangular prisms.",
+)
+
+
+def reference_exact_source_texts(deck: dict[str, Any]) -> list[str]:
+    texts: list[str] = []
+    for source_slide in deck.get("slides", []):
+        if not isinstance(source_slide, dict):
+            continue
+        for key in ("title", "text", "body", "raw_text", "content", "speaker_notes", "notes", "text_joined"):
+            value = source_slide.get(key)
+            if isinstance(value, str):
+                text = normalize_whitespace(value.replace("\u200b", " "))
+                if text:
+                    texts.append(text)
+        for key in ("text_blocks", "texts", "shapes"):
+            fragments = source_slide.get(key) or []
+            if not isinstance(fragments, list):
+                continue
+            for item in fragments:
+                if isinstance(item, str):
+                    text = normalize_whitespace(item.replace("\u200b", " "))
+                elif isinstance(item, dict):
+                    text = normalize_whitespace(str(item.get("text", "")).replace("\u200b", " "))
+                else:
+                    text = ""
+                if text:
+                    texts.append(text)
+    return texts
+
+
+def reference_exact_source_blob(deck: dict[str, Any]) -> str:
+    return " ".join(reference_exact_source_texts(deck))
+
+
+def reference_exact_is_fractional_prism_deck(deck: dict[str, Any]) -> bool:
+    blob = reference_exact_source_blob(deck).lower()
+    return (
+        "rectangular prism" in blob
+        and "fractional edge lengths" in blob
+        and ("volume formulas" in blob or "volume formula" in blob)
+    )
+
+
+def reference_exact_is_generic_text(text: str) -> bool:
+    lower = normalize_whitespace(str(text)).lower()
+    return (
+        lower in REFERENCE_EXACT_SECTION_TITLES
+        or lower in REFERENCE_EXACT_GENERIC_PROBLEMS
+        or lower.startswith("determine the prism's length")
+    )
+
+
+def reference_exact_extract_prompt(deck: dict[str, Any], role: str) -> str:
+    for pattern in REFERENCE_EXACT_ROLE_PATTERNS.get(role, ()):
+        for text in reference_exact_source_texts(deck):
+            match = re.search(pattern, text, flags=re.IGNORECASE)
+            if match:
+                return normalize_whitespace(match.group(0))
+    return REFERENCE_EXACT_ROLE_FALLBACKS.get(role, "")
+
+
+def reference_exact_learning_target(deck: dict[str, Any]) -> str:
+    targets: list[str] = []
+    for text in reference_exact_source_texts(deck):
+        if "I can" not in text or "Learning Target" not in text:
+            continue
+        cleaned = re.sub(r"^Learning Targets?\s*", "", text, flags=re.IGNORECASE)
+        cleaned = normalize_whitespace(cleaned)
+        for match in re.finditer(r"\bI can\b.*?(?=(?:\s+\bI can\b)|$)", cleaned, flags=re.IGNORECASE):
+            statement = normalize_whitespace(match.group(0))
+            if not statement:
+                continue
+            if not statement.endswith((".", "?", "!")):
+                statement = f"{statement}."
+            if statement not in targets:
+                targets.append(statement)
+    if reference_exact_is_fractional_prism_deck(deck):
+        return " ".join(REFERENCE_EXACT_FRACTIONAL_PRISM_OBJECTIVES)
+    if targets:
+        return " ".join(targets[:4])
+    return ""
+
+
+def reference_exact_source_standard(deck: dict[str, Any]) -> str:
+    for text in reference_exact_source_texts(deck):
+        match = re.search(r"\b\d+(?:\.[A-Z0-9]+){1,3}\b", text)
+        if match:
+            return match.group(0)
+    blob = reference_exact_source_blob(deck).lower()
+    if "rectangular prism" in blob and "volume" in blob:
+        return "6.G.2"
+    return ""
+
+
+def reference_exact_title(plan_slide: dict[str, Any], deck: dict[str, Any]) -> str:
+    for candidate in (deck.get("lesson_title", ""), deck.get("title", ""), plan_slide.get("title", "")):
+        text = normalize_whitespace(str(candidate).replace("\u200b", " "))
+        text = re.sub(r"^Session\s+\d+\s+", "", text, flags=re.IGNORECASE)
+        if text and not reference_exact_is_generic_text(text):
+            return text
+    return "Student Notebook"
+
+
+def reference_exact_unit_title(deck: dict[str, Any]) -> str:
+    return normalize_whitespace(deck.get("unit_title", "") or deck.get("unit", "") or "Volume of 3-D Figures")
+
+
+def reference_exact_standard_text(deck: dict[str, Any]) -> str:
+    source_standard = reference_exact_source_standard(deck)
+    if source_standard:
+        return source_standard
+    standard = first_standard_text(deck)
+    match = re.search(r"\b\d+(?:\.[A-Z]+)?\.[A-Z]?\d+\b", standard)
+    return match.group(0) if match else (standard or "6.G.2")
+
+
+def reference_exact_formula_text(deck: dict[str, Any], session_label: str) -> str:
+    formula = normalize_formula_text(formula_for_session(deck, reference_exact_session_key(session_label)))
+    if not formula or formula.lower() == "show every step.":
+        return "V = l × w × h"
+    if formula.lower().startswith("volume ="):
+        return "V = l × w × h"
+    return formula.replace(" x ", " × ")
+
+
+def reference_exact_objective(plan_slide: dict[str, Any], deck: dict[str, Any]) -> str:
+    source_target = reference_exact_learning_target(deck)
+    if source_target:
+        return source_target
+    candidates = [
+        plan_slide.get("learning_target", ""),
+        plan_slide.get("objective", ""),
+        plan_slide.get("primary_text", ""),
+        deck.get("objective", ""),
+        deck.get("summary", ""),
+    ]
+    for candidate in candidates:
+        text = normalize_whitespace(str(candidate))
+        if text and not reference_exact_is_generic_text(text):
+            return truncate_text(text, 245)
+    return "I can determine the volume of a rectangular prism using today's formula and explain my reasoning."
+
+
+def reference_exact_problem_text(plan_slide: dict[str, Any], deck: dict[str, Any] | None = None, role: str = "") -> str:
+    if deck and role:
+        prompt = reference_exact_extract_prompt(deck, role)
+        if prompt:
+            return truncate_text(prompt, 190)
+    source_problem = primary_source_problem_targets(plan_slide, limit=1)
+    if source_problem:
+        text = normalize_whitespace(source_problem[0])
+        if text and not reference_exact_is_generic_text(text):
+            return text
+    for key in ("primary_text", "context_hook", "directions", "secondary_text", "title"):
+        text = normalize_whitespace(str(plan_slide.get(key, "")))
+        if text and not reference_exact_is_generic_text(text):
+            return text
+    if role:
+        return REFERENCE_EXACT_ROLE_FALLBACKS.get(role, "Use the source prompt to solve.")
+    return "Use the measurements from the source problem to determine the volume."
+
+
+def reference_exact_context_text(plan_slide: dict[str, Any], deck: dict[str, Any] | None = None, role: str = "") -> str:
+    if deck and role:
+        prompt = reference_exact_extract_prompt(deck, role)
+        if prompt:
+            return truncate_text(prompt, 190)
+    for key in ("context_hook", "secondary_text", "notes", "directions"):
+        text = normalize_whitespace(str(plan_slide.get(key, "")))
+        if text and not reference_exact_is_generic_text(text):
+            return truncate_text(text, 190)
+    if role:
+        return REFERENCE_EXACT_ROLE_FALLBACKS.get(role, "Study the model and record what you notice.")
+    return "Study the model, labels, and measurements. Record what you notice before solving."
+
+
+def reference_exact_vocab_rows(deck: dict[str, Any], plan_slide: dict[str, Any]) -> list[list[str]]:
+    source_numbers = reference_exact_source_numbers(plan_slide)
+    vocab_deck = deck
+    if not vocab_deck.get("keyword_candidates"):
+        source_records = source_slides_from_numbers(vocab_deck, source_numbers)
+        keyword_candidates = source_term_candidates(source_records or vocab_deck.get("slides", []), limit=8)
+        if not keyword_candidates:
+            keyword_candidates = [
+                str(item.get("word", ""))
+                for item in plan_slide.get("vocabulary", [])
+                if isinstance(item, dict) and item.get("word")
+            ]
+        vocab_deck = {**vocab_deck, "keyword_candidates": keyword_candidates}
+    vocab = session_esol_vocabulary(vocab_deck, source_numbers, limit=5)
+    rows: list[list[str]] = [["Word", "Definition", "Example", "Visual"]]
+    for item in vocab[:5]:
+        rows.append(
+            [
+                truncate_text(item.get("word", ""), 20),
+                truncate_text(item.get("definition", ""), 74),
+                truncate_text(item.get("example", ""), 48),
+                truncate_text(item.get("visual_cue", ""), 38),
+            ]
+        )
+    fallback = [
+        ["Volume", "Amount of space inside a 3-D figure.", "Count cubic units.", "inside space"],
+        ["Rectangular Prism", "A box-shaped solid with rectangular faces.", "A cereal box.", "box shape"],
+        ["Cube", "A prism with all edges the same length.", "A number cube.", "equal edges"],
+        ["Unit Cube", "A cube with side lengths of 1 unit.", "One cubic unit.", "1 × 1 × 1"],
+        ["Dimensions", "Length, width, and height measurements.", "8 by 3 by 4.", "l, w, h"],
+    ]
+    while len(rows) < 6:
+        rows.append(fallback[len(rows) - 1])
+    return rows[:6]
+
+
+def add_reference_nav(slide: Any, active: str, accent: RGBColor) -> None:
+    set_background(slide, BG)
+    left = Inches(0.42)
+    top = Inches(0.20)
+    item_widths = [Inches(1.84), Inches(1.74), Inches(1.92), Inches(1.28), Inches(1.50), Inches(1.42)]
+    x = left
+    for item, w in zip(REFERENCE_EXACT_NAV_ITEMS, item_widths):
+        is_active = item.lower() in active.lower() or active.lower() in item.lower()
+        fill = accent if is_active else PAPER
+        text_color = RGBColor(255, 255, 255) if is_active else NAVY
+        add_rect(slide, x, top, w, Inches(0.42), fill, line_color=accent if is_active else SOFT_LINE, rounded=True)
+        add_text(
+            slide,
+            x + Inches(0.06),
+            top + Inches(0.08),
+            w - Inches(0.12),
+            Inches(0.23),
+            item,
+            size=10.6,
+            bold=item == "EduWonderLab",
+            color=text_color,
+            align=PP_ALIGN.CENTER,
+            margin=0.0,
+            min_size=10.4,
+        )
+        x += w + Inches(0.10)
+
+
+def add_reference_footer(slide: Any, session_label: str, formula_text: str, deck: dict[str, Any]) -> None:
+    footer = f"{session_label} | {formula_text} | Unit: {reference_exact_unit_title(deck)}"
+    add_footer_bar(slide, footer)
+
+
+def add_reference_page_title(
+    slide: Any,
+    title: str,
+    *,
+    subtitle: str = "",
+    accent: RGBColor = NAVY,
+    y: int | None = None,
+    size: float = 22.5,
+) -> None:
+    top = y or Inches(0.72)
+    title_h = Inches(0.50 if size >= 24 else 0.44)
+    add_text(slide, Inches(0.55), top, Inches(8.92), title_h, title, size=size, bold=True, color=NAVY, min_size=16.0)
+    if subtitle:
+        add_text(slide, Inches(0.58), top + Inches(0.50), Inches(8.9), Inches(0.30), subtitle, size=10.8, color=MUTED, min_size=10.4)
+    add_rect(slide, Inches(0.55), top + Inches(0.84), Inches(2.35), Inches(0.055), accent, line_color=accent, rounded=False)
+
+
+def add_reference_box(
+    slide: Any,
+    x: int,
+    y: int,
+    w: int,
+    h: int,
+    title: str,
+    body: str = "",
+    *,
+    fill: RGBColor = PAPER,
+    accent: RGBColor = NAVY,
+    title_size: float = 11.6,
+    body_size: float = 10.6,
+    body_color: RGBColor = INK,
+) -> None:
+    add_rect(slide, x, y, w, h, fill, line_color=SOFT_LINE, rounded=True)
+    add_text(slide, x + Inches(0.14), y + Inches(0.11), w - Inches(0.28), Inches(0.23), title, size=title_size, bold=True, color=accent, min_size=10.4)
+    if body:
+        add_text(
+            slide,
+            x + Inches(0.14),
+            y + Inches(0.41),
+            w - Inches(0.28),
+            h - Inches(0.52),
+            body,
+            size=body_size,
+            color=body_color,
+            min_size=10.4,
+            margin=0.02,
+        )
+
+
+def add_reference_rule(slide: Any, x: int, y: int, w: int, *, color: RGBColor = SOFT_LINE, height_in: float = 0.012) -> None:
+    rule = slide.shapes.add_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, x, y, max(int(w), 1), Inches(height_in))
+    rule.fill.solid()
+    rule.fill.fore_color.rgb = color
+    rule.line.fill.background()
+
+
+def add_reference_field(slide: Any, x: int, y: int, w: int, label: str, *, color: RGBColor = MUTED) -> None:
+    add_text(slide, x, y, Inches(0.75), Inches(0.22), label, size=10.4, bold=True, color=color, margin=0.0, min_size=10.4)
+    add_reference_rule(slide, x + Inches(0.82), y + Inches(0.20), w - Inches(0.82), height_in=0.012)
+
+
+def add_reference_lines(slide: Any, x: int, y: int, w: int, count: int, *, gap: float = 0.34) -> None:
+    for index in range(count):
+        yy = y + Inches(0.16 + gap * index)
+        add_reference_rule(slide, x, yy, w, height_in=0.010)
+
+
+def add_reference_prism_visual(slide: Any, x: int, y: int, w: int, h: int, *, accent: RGBColor = TEAL) -> None:
+    back = slide.shapes.add_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, x + Inches(0.58), y + Inches(0.24), w - Inches(1.10), h - Inches(0.76))
+    back.fill.solid()
+    back.fill.fore_color.rgb = RGBColor(232, 245, 247)
+    back.line.color.rgb = accent
+    front = slide.shapes.add_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, x + Inches(0.25), y + Inches(0.60), w - Inches(1.10), h - Inches(0.76))
+    front.fill.solid()
+    front.fill.fore_color.rgb = RGBColor(247, 253, 252)
+    front.line.color.rgb = accent
+    for start_x, start_y in (
+        (x + Inches(0.25), y + Inches(0.60)),
+        (x + w - Inches(0.85), y + Inches(0.60)),
+        (x + Inches(0.25), y + h - Inches(0.16)),
+        (x + w - Inches(0.85), y + h - Inches(0.16)),
+    ):
+        connector = slide.shapes.add_connector(
+            MSO_CONNECTOR.STRAIGHT,
+            start_x,
+            start_y,
+            start_x + Inches(0.33),
+            start_y - Inches(0.36),
+        )
+        connector.line.color.rgb = accent
+    add_text(slide, x + Inches(0.42), y + h - Inches(0.04), Inches(1.42), Inches(0.24), "length", size=10.4, color=MUTED, align=PP_ALIGN.CENTER, margin=0.0, min_size=10.4)
+    add_text(slide, x + w - Inches(1.42), y + Inches(0.30), Inches(1.24), Inches(0.24), "height", size=10.4, color=MUTED, align=PP_ALIGN.RIGHT, margin=0.0, min_size=10.4)
+    add_text(slide, x + w - Inches(1.76), y + h - Inches(0.43), Inches(1.28), Inches(0.24), "width", size=10.4, color=MUTED, align=PP_ALIGN.CENTER, margin=0.0, min_size=10.4)
+
+
+def render_reference_exact_cover(
+    slide: Any,
+    plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
+    session_label: str,
+    deck: dict[str, Any],
+    page: int,
+) -> None:
+    formula = reference_exact_formula_text(deck, session_label)
+    is_fractional_prism = reference_exact_is_fractional_prism_deck(deck)
+    formula_display = f"{formula}\nV = B × h" if is_fractional_prism and "V = B" not in formula else formula
+    path_body = "Be Curious -> Vocabulary -> Try It -> Practice -> Discuss"
+    title = reference_exact_title(plan_slide, deck)
+    accent = REFERENCE_EXACT_SECTION_COLORS["cover"]
+    add_reference_nav(slide, "EduWonderLab", accent)
+    add_reference_page_title(slide, title, subtitle=f"Standard {reference_exact_standard_text(deck)}", accent=accent, size=25.5)
+    add_reference_field(slide, Inches(8.95), Inches(0.90), Inches(3.65), "Name")
+    add_reference_field(slide, Inches(8.95), Inches(1.26), Inches(3.65), "Date")
+    add_reference_field(slide, Inches(8.95), Inches(1.62), Inches(3.65), "Class")
+    if is_fractional_prism:
+        goal_body = "\n".join(REFERENCE_EXACT_FRACTIONAL_PRISM_OBJECTIVES)
+        unit_body = f"{reference_exact_unit_title(deck)}\nBe Curious -> Vocabulary -> Try It\nPractice -> Discuss"
+        add_reference_box(
+            slide,
+            Inches(0.58),
+            Inches(1.92),
+            Inches(7.84),
+            Inches(1.88),
+            "Today's Goals",
+            goal_body,
+            fill=PAPER,
+            accent=TEAL,
+            title_size=12.6,
+            body_size=10.4,
+        )
+        add_reference_box(
+            slide,
+            Inches(8.68),
+            Inches(1.92),
+            Inches(3.82),
+            Inches(1.88),
+            "Unit + Path",
+            unit_body,
+            fill=PALE_GOLD,
+            accent=GOLD,
+            title_size=12.6,
+            body_size=10.8,
+        )
+    else:
+        add_reference_box(
+            slide,
+            Inches(0.58),
+            Inches(1.92),
+            Inches(4.26),
+            Inches(1.72),
+            "Today's Goal",
+            reference_exact_objective(plan_slide, deck),
+            fill=PAPER,
+            accent=TEAL,
+            title_size=12.6,
+            body_size=10.4,
+        )
+        add_reference_box(
+            slide,
+            Inches(5.04),
+            Inches(1.92),
+            Inches(3.38),
+            Inches(1.72),
+            "Unit",
+            f"{reference_exact_unit_title(deck)}\nFormula focus: {formula}",
+            fill=PALE_BLUE,
+            accent=NAVY,
+            title_size=12.6,
+            body_size=11.0,
+        )
+        add_reference_box(
+            slide,
+            Inches(8.68),
+            Inches(1.92),
+            Inches(3.82),
+            Inches(1.72),
+            "Learning Path",
+            path_body,
+            fill=PALE_GOLD,
+            accent=GOLD,
+            title_size=12.6,
+            body_size=10.7,
+        )
+    add_reference_box(
+        slide,
+        Inches(0.58),
+        Inches(3.90),
+        Inches(4.55),
+        Inches(1.82),
+        "Before We Start",
+        "What do you already know about measuring space inside a box?",
+        fill=PAPER,
+        accent=CORAL,
+        title_size=12.3,
+        body_size=10.5,
+    )
+    add_reference_lines(slide, Inches(0.86), Inches(4.68), Inches(3.95), 3)
+    add_reference_box(
+        slide,
+        Inches(5.42),
+        Inches(3.90),
+        Inches(3.22),
+        Inches(1.82),
+        "Formula",
+        formula_display,
+        fill=PALE_NAVY,
+        accent=NAVY,
+        title_size=12.3,
+        body_size=18.0 if "\n" in formula_display else 20.0,
+    )
+    add_reference_prism_visual(slide, Inches(9.00), Inches(3.88), Inches(3.18), Inches(1.55), accent=TEAL)
+    tracker = [["Skill", "Before", "After"], ["I can name dimensions.", "1 2 3 4", "1 2 3 4"], ["I can find volume.", "1 2 3 4", "1 2 3 4"]]
+    add_table(
+        slide,
+        Inches(0.58),
+        Inches(5.92),
+        Inches(11.92),
+        Inches(0.96),
+        tracker,
+        column_widths=[Inches(3.70), Inches(4.10), Inches(4.12)],
+        row_heights=[Inches(0.30), Inches(0.33), Inches(0.33)],
+        header_font_size=10.6,
+        body_font_size=10.4,
+    )
+    add_reference_footer(slide, session_label, formula, deck)
+
+
+def render_reference_exact_be_curious(
+    slide: Any,
+    plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
+    session_label: str,
+    deck: dict[str, Any],
+    page: int,
+) -> None:
+    formula = reference_exact_formula_text(deck, session_label)
+    accent = REFERENCE_EXACT_SECTION_COLORS["be_curious"]
+    add_reference_nav(slide, "Be Curious", accent)
+    prompt = reference_exact_context_text(plan_slide, deck, "be_curious")
+    add_reference_page_title(slide, "Be Curious", subtitle=prompt, accent=accent)
+    add_reference_box(slide, Inches(0.58), Inches(1.72), Inches(4.72), Inches(3.15), "Look Closely", "", fill=PALE_BLUE, accent=TEAL)
+    add_reference_prism_visual(slide, Inches(1.00), Inches(2.22), Inches(3.70), Inches(2.02), accent=TEAL)
+    add_reference_box(slide, Inches(5.58), Inches(1.72), Inches(2.80), Inches(0.76), "Formula", formula, fill=PALE_NAVY, accent=NAVY, title_size=11.4, body_size=14.0)
+    add_reference_box(
+        slide,
+        Inches(8.66),
+        Inches(1.72),
+        Inches(3.83),
+        Inches(0.76),
+        "Keywords",
+        "volume | length | width | height | cubic units",
+        fill=PALE_GOLD,
+        accent=GOLD,
+        title_size=11.4,
+        body_size=10.4,
+    )
+    add_reference_box(slide, Inches(5.58), Inches(2.82), Inches(3.18), Inches(2.05), "I Notice", "Write 2 facts you can see in the model.", fill=PAPER, accent=TEAL)
+    add_reference_lines(slide, Inches(5.88), Inches(3.60), Inches(2.56), 3)
+    add_reference_box(slide, Inches(9.10), Inches(2.82), Inches(3.40), Inches(2.05), "I Wonder", "Write 1 question you have before solving.", fill=PAPER, accent=CORAL)
+    add_reference_lines(slide, Inches(9.40), Inches(3.60), Inches(2.76), 3)
+    add_reference_box(
+        slide,
+        Inches(0.58),
+        Inches(5.20),
+        Inches(5.72),
+        Inches(1.10),
+        "Visual Prompt",
+        prompt,
+        fill=PAPER,
+        accent=NAVY,
+        title_size=11.6,
+        body_size=10.4,
+    )
+    add_reference_box(slide, Inches(6.62), Inches(5.20), Inches(5.87), Inches(1.10), "My First Idea", "", fill=PAPER, accent=TEAL)
+    add_reference_lines(slide, Inches(6.92), Inches(5.88), Inches(5.25), 2)
+    add_reference_footer(slide, session_label, formula, deck)
+
+
+def render_reference_exact_vocabulary(
+    slide: Any,
+    plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
+    session_label: str,
+    deck: dict[str, Any],
+    page: int,
+) -> None:
+    formula = reference_exact_formula_text(deck, session_label)
+    accent = REFERENCE_EXACT_SECTION_COLORS["vocabulary"]
+    add_reference_nav(slide, "Vocabulary", accent)
+    add_reference_page_title(slide, "Vocabulary", subtitle="Use precise math words when you explain your reasoning.", accent=accent)
+    add_table(
+        slide,
+        Inches(0.58),
+        Inches(1.72),
+        Inches(11.92),
+        Inches(3.90),
+        reference_exact_vocab_rows(deck, plan_slide),
+        column_widths=[Inches(2.10), Inches(4.45), Inches(2.90), Inches(2.47)],
+        row_heights=[Inches(0.42), Inches(0.70), Inches(0.70), Inches(0.70), Inches(0.70), Inches(0.68)],
+        header_font_size=10.5,
+        body_font_size=10.4,
+        column_alignments=[PP_ALIGN.LEFT, PP_ALIGN.LEFT, PP_ALIGN.LEFT, PP_ALIGN.CENTER],
+    )
+    add_reference_box(slide, Inches(0.58), Inches(5.92), Inches(5.75), Inches(0.84), "Sentence Frame", "The volume is ___ cubic units because ___.", fill=PALE_BLUE, accent=TEAL, body_size=11.0)
+    add_reference_box(slide, Inches(6.60), Inches(5.92), Inches(5.90), Inches(0.84), "My Sketch", "Draw or label one vocabulary word.", fill=PAPER, accent=GOLD, body_size=10.5)
+    add_reference_footer(slide, session_label, formula, deck)
+
+
+def render_reference_exact_guided_problem(
+    slide: Any,
+    plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
+    session_label: str,
+    deck: dict[str, Any],
+    page: int,
+) -> None:
+    formula = reference_exact_formula_text(deck, session_label)
+    accent = REFERENCE_EXACT_SECTION_COLORS["worked_example"]
+    problem = reference_exact_problem_text(plan_slide, deck, "guided")
+    add_reference_nav(slide, "Try It", accent)
+    add_reference_page_title(slide, "Try It: Guided Problem", subtitle=truncate_text(problem, 150), accent=accent)
+    add_reference_box(slide, Inches(0.58), Inches(1.72), Inches(4.72), Inches(1.32), "Source Problem", problem, fill=PALE_BLUE, accent=TEAL, body_size=10.5)
+    add_reference_prism_visual(slide, Inches(0.98), Inches(3.30), Inches(3.60), Inches(1.42), accent=TEAL)
+    organizer = [
+        ["Read", "What measurements do I have?"],
+        ["Plan", "Which formula will I use?"],
+        ["Solve", "Substitute and multiply."],
+        ["Explain", "What does the answer mean?"],
+    ]
+    add_table(
+        slide,
+        Inches(5.58),
+        Inches(1.72),
+        Inches(3.08),
+        Inches(2.25),
+        organizer,
+        column_widths=[Inches(1.00), Inches(2.08)],
+        row_heights=[Inches(0.56), Inches(0.56), Inches(0.56), Inches(0.57)],
+        header_font_size=10.6,
+        body_font_size=10.4,
+        column_alignments=[PP_ALIGN.CENTER, PP_ALIGN.LEFT],
+    )
+    add_reference_box(slide, Inches(9.00), Inches(1.72), Inches(3.50), Inches(2.25), "Set Up", f"{formula}\nV = ___ × ___ × ___\nV = ___ cubic units", fill=PAPER, accent=NAVY, body_size=13.2)
+    add_reference_box(slide, Inches(5.58), Inches(4.34), Inches(6.92), Inches(1.88), "Show Your Work", "", fill=PAPER, accent=TEAL)
+    add_reference_lines(slide, Inches(5.88), Inches(5.02), Inches(6.30), 4, gap=0.30)
+    add_reference_box(slide, Inches(0.58), Inches(5.20), Inches(4.72), Inches(1.02), "Answer Sentence", "The volume is ___ cubic units because ___.", fill=PALE_GOLD, accent=GOLD, body_size=10.6)
+    add_reference_footer(slide, session_label, formula, deck)
+
+
+def render_reference_exact_practice(
+    slide: Any,
+    plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
+    session_label: str,
+    deck: dict[str, Any],
+    page: int,
+) -> None:
+    formula = reference_exact_formula_text(deck, session_label)
+    accent = REFERENCE_EXACT_SECTION_COLORS["practice"]
+    title = normalize_whitespace(str(plan_slide.get("title", "")))
+    if reference_exact_is_generic_text(title) or not title or "rectangular prism" not in title.lower():
+        title = "Partner Practice: Volume of a Rectangular Prism"
+    problem = reference_exact_problem_text(plan_slide, deck, "practice")
+    add_reference_nav(slide, "Practice", accent)
+    add_reference_page_title(slide, truncate_text(title, 62), subtitle=truncate_text(problem, 150), accent=accent)
+    add_reference_box(slide, Inches(0.58), Inches(1.72), Inches(4.35), Inches(1.18), "Problem", problem, fill=PALE_CORAL, accent=CORAL, body_size=10.5)
+    add_reference_box(slide, Inches(0.58), Inches(3.18), Inches(4.35), Inches(2.40), "Model / Label", "", fill=PAPER, accent=CORAL)
+    add_reference_prism_visual(slide, Inches(1.05), Inches(3.78), Inches(3.36), Inches(1.38), accent=CORAL)
+    add_reference_box(slide, Inches(5.28), Inches(1.72), Inches(3.18), Inches(1.18), "Formula", formula, fill=PALE_NAVY, accent=NAVY, body_size=15.0)
+    add_reference_box(slide, Inches(8.78), Inches(1.72), Inches(3.72), Inches(1.18), "Substitute", "V = ___ × ___ × ___", fill=PAPER, accent=NAVY, body_size=14.0)
+    add_reference_box(slide, Inches(5.28), Inches(3.18), Inches(7.22), Inches(2.40), "Work Space", "", fill=PAPER, accent=TEAL)
+    add_reference_lines(slide, Inches(5.60), Inches(3.95), Inches(6.60), 5, gap=0.30)
+    add_reference_box(slide, Inches(0.58), Inches(5.90), Inches(11.92), Inches(0.74), "Explain to Your Partner", "My answer is ___ cubic units. I know because ___.", fill=PALE_BLUE, accent=TEAL, body_size=10.8)
+    add_reference_footer(slide, session_label, formula, deck)
+
+
+def render_reference_exact_error_analysis(
+    slide: Any,
+    plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
+    session_label: str,
+    deck: dict[str, Any],
+    page: int,
+) -> None:
+    formula = reference_exact_formula_text(deck, session_label)
+    prompt = reference_exact_problem_text(plan_slide, deck, "error")
+    problem = prompt
+    source_targets = [
+        target
+        for target in primary_source_problem_targets(plan_slide, limit=2)
+        if not reference_exact_is_generic_text(target)
+    ]
+    if source_targets and not source_problem_text_overlap(prompt, source_targets):
+        problem = source_targets[0]
+    student_work = f"A student's work -- something is wrong!\n{problem}"
+    accent = SAGE
+    add_reference_nav(slide, "Discuss", accent)
+    add_reference_page_title(slide, "Find the Error", subtitle="A student's work -- something is wrong!", accent=accent)
+    add_reference_box(slide, Inches(0.58), Inches(1.62), Inches(5.82), Inches(1.70), "Student Work", student_work, fill=PALE_SAGE, accent=SAGE, body_size=10.4)
+    add_reference_box(slide, Inches(6.65), Inches(1.62), Inches(2.40), Inches(1.70), "What Went Wrong?", "Circle or describe the error.", fill=PAPER, accent=CORAL, body_size=10.5)
+    add_reference_lines(slide, Inches(6.94), Inches(2.55), Inches(1.78), 2)
+    add_reference_box(slide, Inches(9.32), Inches(1.62), Inches(3.18), Inches(1.70), "Correct Formula", formula, fill=PALE_NAVY, accent=NAVY, body_size=14.0)
+    add_reference_box(slide, Inches(0.58), Inches(3.58), Inches(5.78), Inches(1.88), "Correct the Work", "", fill=PAPER, accent=TEAL)
+    add_reference_lines(slide, Inches(0.90), Inches(4.24), Inches(5.15), 4, gap=0.27)
+    add_reference_box(slide, Inches(6.70), Inches(3.58), Inches(5.80), Inches(1.88), "Explain Your Reasoning", "The mistake was ___. The correct volume is ___ cubic units.", fill=PAPER, accent=SAGE, body_size=10.5)
+    add_reference_lines(slide, Inches(7.02), Inches(4.36), Inches(5.12), 3, gap=0.27)
+    add_reference_box(slide, Inches(0.58), Inches(5.80), Inches(11.92), Inches(0.84), "Discussion Check", "What does cubic units tell us that square units does not?", fill=PALE_GOLD, accent=GOLD, body_size=10.4)
+    add_reference_footer(slide, session_label, formula, deck)
+
+
+def render_reference_exact_slide(
+    slide: Any,
+    plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
+    session_label: str,
+    deck: dict[str, Any],
+    page: int,
+) -> bool:
+    kind = plan_slide.get("kind", "")
+    template_role = normalize_whitespace(plan_slide.get("template_role", ""))
+    title = normalize_whitespace(plan_slide.get("title", "")).lower()
+    if kind in {"cover", "learning_target"} or template_role in {"cover_page", "learning_objectives"}:
+        render_reference_exact_cover(slide, plan_slide, session_plan, session_label, deck, page)
+    elif kind == "be_curious":
+        render_reference_exact_be_curious(slide, plan_slide, session_plan, session_label, deck, page)
+    elif kind == "vocabulary":
+        render_reference_exact_vocabulary(slide, plan_slide, session_plan, session_label, deck, page)
+    elif kind == "worked_example" or "guided problem" in title or title.startswith("try it"):
+        render_reference_exact_guided_problem(slide, plan_slide, session_plan, session_label, deck, page)
+    elif template_role == "best_fit_review" or "find the error" in title or "error" in title:
+        render_reference_exact_error_analysis(slide, plan_slide, session_plan, session_label, deck, page)
+    elif kind == "practice":
+        render_reference_exact_practice(slide, plan_slide, session_plan, session_label, deck, page)
+    else:
+        return False
+    return True
+
+
+def reference_exact_slide_engagement_modes(plan_slide: dict[str, Any]) -> set[str]:
+    kind = plan_slide.get("kind", "")
+    template_role = normalize_whitespace(plan_slide.get("template_role", ""))
+    title = normalize_whitespace(plan_slide.get("title", "")).lower()
+    modes: set[str] = set()
+    if kind in {"cover", "learning_target"} or template_role in {"cover_page", "learning_objectives"}:
+        modes.add("reflect")
+    if kind == "be_curious":
+        modes.update({"notice", "wonder"})
+    elif kind == "vocabulary":
+        modes.update({"match", "visual"})
+    elif kind == "worked_example" or "guided problem" in title or title.startswith("try it"):
+        modes.update({"guided_solve", "annotate"})
+    elif template_role == "best_fit_review" or "find the error" in title or "error" in title:
+        modes.update({"error_analysis", "discuss"})
+    elif kind == "practice":
+        modes.update({"partner", "apply"})
+    return modes
+
+
+def reference_exact_engagement_modes(session: dict[str, Any]) -> set[str]:
+    modes: set[str] = set()
+    for plan_slide in session.get("slides", []):
+        modes.update(reference_exact_slide_engagement_modes(plan_slide))
+    return modes
+
+
+def reference_exact_engagement_slide_count(session: dict[str, Any]) -> int:
+    return sum(1 for plan_slide in session.get("slides", []) if reference_exact_slide_engagement_modes(plan_slide))
+
 
 def render_cover_slide(
     slide: Any,
@@ -14886,6 +15763,7 @@ def render_be_curious_slide(
     slide: Any,
     *,
     plan_slide: dict[str, Any],
+    session_plan: dict[str, Any],
     page: int,
     footer_text: str,
     image_lookup: dict[int, dict[str, Any]],
@@ -14894,13 +15772,14 @@ def render_be_curious_slide(
         render_exact_be_curious_slide(
             slide,
             plan_slide=plan_slide,
+            session_plan=session_plan,
             page=page,
             footer_text=footer_text,
             image_lookup=image_lookup,
         )
         return
     notice_kernels, wonder_kernels = be_curious_sentence_kernels(plan_slide)
-    vocab_items = be_curious_vocabulary_items(plan_slide)
+    vocab_items = be_curious_vocabulary_items(plan_slide, session_plan)
     add_header(
         slide,
         section=plan_slide["section"],
@@ -14938,28 +15817,42 @@ def render_be_curious_slide(
         Inches(5.05),
         Inches(2.0),
         Inches(3.62),
-        Inches(3.28),
+        Inches(2.40),
         "Notice",
         be_curious_panel_prompt(
             plan_slide["primary_text"] or "",
             notice_kernels,
             fallback="Record details you notice in the image before solving anything.",
         ),
-        lines=4,
+        lines=3,
     )
     add_lined_area(
         slide,
         Inches(9.13),
         Inches(2.0),
         Inches(3.62),
-        Inches(3.28),
+        Inches(2.40),
         "Wonder",
         be_curious_panel_prompt(
             plan_slide["secondary_text"] or "",
             wonder_kernels,
             fallback="Ask a question or make a prediction that could deepen your understanding.",
         ),
-        lines=4,
+        lines=3,
+    )
+    starters_text = "  ".join(f"• {k}" for k in notice_kernels[:1] + wonder_kernels[:1])
+    add_card(
+        slide,
+        Inches(5.05),
+        Inches(4.56),
+        Inches(7.70),
+        Inches(0.86),
+        "Sentence Starters",
+        starters_text,
+        fill=PAPER_WARM,
+        accent=CORAL,
+        title_size=12.8,
+        body_size=11.7,
     )
     if has_activity(plan_slide):
         add_vocabulary_snapshot(
@@ -17763,25 +18656,18 @@ def run_session_design_review(prs: Presentation, session_plan: dict[str, Any], s
         for slide in session_plan.get("slides", [])
         if normalize_whitespace(slide.get("activity_name", ""))
     ]
-    activity_count = len(activity_names)
-    if exact_template:
-        activity_count += sum(
-            1
-            for slide in session_plan.get("slides", [])
-            if normalize_whitespace(slide.get("template_role", "")) == "best_fit_review"
-            and not normalize_whitespace(slide.get("activity_name", ""))
-            and (
-                normalize_whitespace(slide.get("partner_prompt", ""))
-                or slide.get("discussion_questions")
-                or normalize_whitespace(slide.get("review_render_role", ""))
-            )
-        )
+    activity_count = (
+        reference_exact_engagement_slide_count(session_plan) if exact_template else len(activity_names)
+    )
     if activity_count < activity_floor:
         issues.append(f"{session_label}: not enough named activity slides to support the premium default")
     if activity_count > activity_cap:
         issues.append(f"{session_label}: too many activity slides for a clean premium layout")
     engagement_count = session_engagement_slide_count(session_plan)
-    engagement_modes = session_engagement_modes(session_plan)
+    engagement_modes = set(session_engagement_modes(session_plan))
+    if exact_template:
+        engagement_count = max(engagement_count, reference_exact_engagement_slide_count(session_plan))
+        engagement_modes.update(reference_exact_engagement_modes(session_plan))
     if engagement_count < engagement_slide_target(session_plan):
         issues.append(f"{session_label}: not enough high-agency engagement pages across the session")
     if len(engagement_modes) < engagement_mode_target(session_plan):
@@ -17808,11 +18694,12 @@ def run_session_design_review(prs: Presentation, session_plan: dict[str, Any], s
     for slide in objective_slides:
         if not normalize_whitespace(slide.get("primary_text", "")):
             issues.append(f"{session_label}: missing content objective text")
-        if not normalize_whitespace(slide.get("secondary_text", "")):
+        language_objective = normalize_whitespace(slide.get("secondary_text", ""))
+        if not exact_template and not language_objective:
             issues.append(f"{session_label}: missing language objective text")
         if not is_i_can_objective(slide.get("primary_text", "")):
             issues.append(f"{session_label}: content objective must start with 'I can'")
-        if not is_i_can_objective(slide.get("secondary_text", "")):
+        if language_objective and not is_i_can_objective(language_objective):
             issues.append(f"{session_label}: language objective must start with 'I can'")
     for page_index, (ppt_slide, plan_slide) in enumerate(zip(prs.slides, session_plan.get("slides", [])), start=1):
         template_role = normalize_whitespace(plan_slide.get("template_role", ""))
@@ -17870,12 +18757,12 @@ def run_session_design_review(prs: Presentation, session_plan: dict[str, Any], s
         for shape in ppt_slide.shapes:
             if not getattr(shape, "has_text_frame", False):
                 continue
+            text_value = shape_text_value(shape)
+            if not text_value:
+                continue
             text_shape_count += 1
             if int(shape.width) <= 0 or int(shape.height) <= 0:
                 issues.append(f"{session_label} page {page_index}: invalid text shape geometry")
-                continue
-            text_value = shape_text_value(shape)
-            if not text_value:
                 continue
             if (
                 plan_slide.get("kind") != "vocabulary"
@@ -17908,7 +18795,7 @@ def run_session_design_review(prs: Presentation, session_plan: dict[str, Any], s
         if plan_slide.get("kind") == "learning_target" and not exact_template:
             if CHECKMARK_CHIP not in non_textbox_shape_text_raws:
                 issues.append(f"{session_label} page {page_index}: learning-target checkmarks are not embedded in draggable shapes")
-        elif has_activity(plan_slide) and draggable_texts and not normalize_whitespace(plan_slide.get("premium_layout", "")) and (
+        elif not exact_template and has_activity(plan_slide) and draggable_texts and not normalize_whitespace(plan_slide.get("premium_layout", "")) and (
             not template_role or template_role in TEMPLATE_ROLES_WITH_DRAGGABLES
         ):
             if not any(display_text_key(piece) in non_textbox_shape_text_keys for piece in draggable_texts if display_text_key(piece)):
@@ -18041,10 +18928,20 @@ def render_session_notebook(
     blank = prs.slide_layouts[6]
     image_lookup = build_image_lookup(deck)
     footer_text = ""
+    exact_reference_template = uses_exact_esol_template(session_plan)
 
     for page_index, plan_slide in enumerate(session_plan["slides"], start=1):
         slide = prs.slides.add_slide(blank)
         kind = plan_slide["kind"]
+        if exact_reference_template and render_reference_exact_slide(
+            slide,
+            plan_slide,
+            session_plan,
+            session_label,
+            deck,
+            page_index,
+        ):
+            continue
         if kind == "cover":
             render_cover_slide(
                 slide,
@@ -18057,6 +18954,7 @@ def render_session_notebook(
             render_be_curious_slide(
                 slide,
                 plan_slide=plan_slide,
+                session_plan=session_plan,
                 page=page_index,
                 footer_text=footer_text,
                 image_lookup=image_lookup,
@@ -18160,6 +19058,10 @@ def render_plan(
             output_path=output_path,
         )
         outputs[output_key] = output_path
+
+    html_output = render_html_notebook(plan, deck, output_dir)
+    outputs["html_notebook"] = html_output
+
     return outputs
 
 

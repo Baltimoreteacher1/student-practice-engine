@@ -270,6 +270,8 @@ def generate_job(
     }
     if result["outputs"].get("session2"):
         relative_files["session2"] = result["outputs"]["session2"].relative_to(job_dir).as_posix()
+    if result["outputs"].get("html_notebook"):
+        relative_files["html_notebook"] = result["outputs"]["html_notebook"].relative_to(job_dir).as_posix()
     manifest = {
         "job_id": job_id,
         "created_at": datetime.now().isoformat(timespec="seconds"),
@@ -434,7 +436,6 @@ def build_bundle(destination: Path) -> Path:
         "NOTEBOOK_ENGINE.md",
         "NOTEBOOK_ENGINE_APP.md",
         "launch_notebook_engine.command",
-        "process_notebook_inbox.command",
         "activity_library.txt",
         "activity_database.json",
     ):

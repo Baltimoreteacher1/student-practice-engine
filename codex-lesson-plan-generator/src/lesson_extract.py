@@ -150,8 +150,18 @@ def extract_learning_target_bundle(raw_deck: dict[str, Any]) -> dict[str, Any]:
     standards_source_lines = unique_preserve(standards_source_lines, cleaner=clean_source_line)
     standards = unique_preserve(standards)
 
+    if not standards:
+        for slide in slides:
+            for line in slide.get("text_items", []):
+                detected = parse_standards(line)
+                if detected:
+                    standards.extend(detected)
+                    standards_source_lines.append(clean_source_line(line))
+        standards = unique_preserve(standards)
+        standards_source_lines = unique_preserve(standards_source_lines, cleaner=clean_source_line)
+
     status = ""
-    if candidate_slides and not standards:
+    if not standards:
         status = "Not explicitly listed in source slides."
 
     return {
@@ -461,13 +471,27 @@ def extract_mindset_prompts(slides: list[dict[str, Any]]) -> list[str]:
     return unique_preserve(prompts, cleaner=clean_source_line)
 
 
+def _is_vocab_slide(slide: dict[str, Any]) -> bool:
+    title = clean_line(slide.get("title", "")).lower()
+    return any(kw in title for kw in ("vocabulary", "vocab", "key terms", "key words"))
+
+
 def find_vocabulary_terms(slides: list[dict[str, Any]]) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
+
+    def _add(term: str, definition: str, slide_num: int | None) -> None:
+        key = (term.lower(), definition.lower())
+        if key in seen:
+            return
+        seen.add(key)
+        results.append({"term": term, "definition": definition, "slide_numbers": [slide_num]})
+
     for slide in slides:
+        on_vocab_slide = _is_vocab_slide(slide)
         for line in extract_content_lines(slide, include_notes=False):
             lowered = line.lower()
-            if not any(marker in lowered for marker in VOCABULARY_MARKERS):
+            if not on_vocab_slide and not any(marker in lowered for marker in VOCABULARY_MARKERS):
                 continue
             term = ""
             definition = ""
@@ -481,18 +505,12 @@ def find_vocabulary_terms(slides: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     term = clean_line(colon_match.group(1))
                     definition = clean_source_line(colon_match.group(2))
             if not term or not definition:
+                if on_vocab_slide and len(line.split()) <= 4 and line[0].isupper():
+                    term = clean_line(line)
+                    definition = ""
+            if not term:
                 continue
-            key = (term.lower(), definition.lower())
-            if key in seen:
-                continue
-            seen.add(key)
-            results.append(
-                {
-                    "term": term,
-                    "definition": definition,
-                    "slide_numbers": [slide.get("slide_number")],
-                }
-            )
+            _add(term, definition, slide.get("slide_number"))
     return results
 
 

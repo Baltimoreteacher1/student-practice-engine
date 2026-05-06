@@ -4,11 +4,14 @@
 This repository contains EduWonderLab workflows for generating lesson plans, student notebooks, and related classroom artifacts from source materials.
 
 Treat source files as the source of truth. Preserve instructional intent, sequencing, examples, vocabulary, and artifact fidelity unless explicitly asked to redesign.
+Uploaded/source lesson slides, existing engine files, and current project files are source-of-truth inputs. Preserve math content, problem order, vocabulary, standards, objectives, examples, and lesson intent. Do not invent, simplify, omit, or reorder source content unless explicitly asked.
 
 ## Core operating rules
 - Prefer safe, minimal, high-confidence edits over broad rewrites.
 - Keep outputs final, production-ready, and immediately usable.
 - Preserve the existing workflow, folder structure, and pipeline architecture unless explicitly asked to change them.
+- Do not change notebook/lesson engine architecture, renderer structure, file layout, schemas, function names, or existing stable workflows unless the task explicitly requests an engine update.
+- For extractor or fix requests, edit only the requested layer.
 - Do not invent lesson content, examples, objectives, vocabulary, assessments, teacher moves, or student tasks not supported by source materials.
 - When ambiguity is minor, choose the highest-utility interpretation that best preserves source fidelity and workflow stability.
 - Repair before rebuilding when the current structure is substantially correct.
@@ -27,6 +30,8 @@ If additional workflow folders, scripts, templates, or validators exist, inspect
 ## Default execution pattern
 For significant work, follow this sequence:
 extract -> map -> build -> audit -> repair -> final QA
+
+Do not jump directly to final output when source extraction or mapping is needed.
 
 For complex, high-risk, or multi-step work:
 1. make a short plan first
@@ -50,6 +55,16 @@ For complex, high-risk, or multi-step work:
 - Preserve backward compatibility when working on shared scripts unless a breaking change is explicitly requested.
 - Prefer the smallest reliable fix over the most ambitious rewrite.
 
+## Destructive and external-impact boundary
+High autonomy is allowed for normal edits, refactors, artifact generation, and tests. Still ask before:
+- deleting large folders
+- wiping generated artifacts
+- changing authentication, credentials, or secrets
+- installing global tools
+- pushing to remote repositories
+- changing unrelated files
+- modifying stable engine architecture
+
 ## Code and automation rules
 - Check platform and API correctness before finalizing code.
 - Keep code paste-ready, syntax-safe, and consistent with the existing codebase.
@@ -68,6 +83,14 @@ When writing or editing Apps Script, verify the correct host/service:
 
 If the requested script would fail in the wrong Apps Script environment, warn clearly before finalizing.
 
+For Google Apps Script:
+- validate API assumptions before writing code
+- avoid unsupported or speculative methods
+- include `validateEnvironment_` and `selfTest_` when useful
+- prefer stable `FormsApp`, `SlidesApp`, `DocumentApp`, and `SpreadsheetApp` patterns
+- do not use questionable methods such as `item.asQuizItem()` unless confirmed valid
+- make requested quiz point values and required questions explicit
+
 ## Artifact quality rules
 
 ### Lesson plans
@@ -84,10 +107,15 @@ If the requested script would fail in the wrong Apps Script environment, warn cl
 
 ## Validation and definition of done
 Before finishing:
+- when code is changed, verify syntax/build passes when a relevant check is available
+- when generating PPTX/DOCX/HTML, confirm files exist at expected paths
+- when editability is requested, confirm outputs remain in editable formats
 - check for placeholder text
 - check for missing sections or dangling references
-- check for broken formatting or layout issues
+- check for broken formatting, obvious overflow, malformed filenames, or layout issues
+- check math notation, units, formulas, and labels for consistency with the source
 - check for source-fidelity drift
+- check source content was preserved
 - check internal consistency across titles, objectives, vocabulary, examples, directions, and activity names
 - check for obvious runtime risks in code or automation files
 - run existing tests, lint, build, or validation commands when they exist
@@ -96,10 +124,16 @@ Before finishing:
 
 ## Preferred final response shape
 For meaningful work, end with:
-- what changed
-- key risks or assumptions
-- what was validated
-- any required follow-up items for full reliability
+- files changed or created
+- commands run
+- pass/fail results
+- unresolved issues, risks, or assumptions
+- exact next action if manual user action is required
+
+## Agent and documentation tool rules
+- Use subagents only when the task is complex enough to benefit from parallel review, such as codebase audits, source-fidelity audits, bug hunts across many files, or comparing implementation against requirements.
+- Do not spawn subagents for simple single-file edits.
+- When a task depends on current external developer documentation, use configured MCP documentation tools if available before guessing.
 
 ## Skills boundary
 Use `AGENTS.md` for durable repo behavior, constraints, and quality standards.

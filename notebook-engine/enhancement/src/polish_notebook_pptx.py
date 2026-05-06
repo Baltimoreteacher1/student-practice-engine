@@ -84,13 +84,42 @@ SORTING_SIGNAL_TOKENS = {
 }
 
 DATA_VISUAL_SIGNAL_TOKENS = {
+    "average",
+    "bar",
+    "chart",
+    "collect",
+    "compare",
     "data",
     "distribution",
     "dot",
     "graph",
+    "measure",
+    "median",
     "plot",
+    "range",
+    "spread",
+    "survey",
     "table",
+    "variability",
 }
+VISUAL_SCAFFOLD_MARKERS = (
+    "visual model",
+    "represent it",
+    "sort + sketch",
+    "data snapshot",
+    "evidence path",
+)
+VISUAL_SKIP_TITLE_TOKENS = (
+    "cover",
+    "session map",
+    "vocabulary in action",
+    "challenge lab",
+    "compare and justify",
+    "fix the mistake",
+    "representation connection",
+    "example vs. non-example",
+    "mini debate",
+)
 
 MIN_CHIP_FONT_PT = 9.0
 MIN_FOOTER_FONT_PT = 9.0
@@ -118,6 +147,7 @@ class PolishStats:
     response_zones: int = 0
     title_backplates: int = 0
     prompt_cards: int = 0
+    visual_scaffolds: int = 0
     added_slides: int = 0
 
     def to_dict(self) -> dict[str, int]:
@@ -133,6 +163,7 @@ class PolishStats:
             "responseZones": self.response_zones,
             "titleBackplates": self.title_backplates,
             "promptCards": self.prompt_cards,
+            "visualScaffolds": self.visual_scaffolds,
             "addedSlides": self.added_slides,
         }
 
@@ -857,6 +888,258 @@ def add_step_card(slide, left, top, width, step_number: int, title: str, body: s
         margin_top=Inches(0.09),
         margin_bottom=Inches(0.08),
     )
+
+
+def shape_bounds(shape) -> tuple[int, int, int, int]:
+    return (
+        int(shape.left),
+        int(shape.top),
+        int(shape.left + shape.width),
+        int(shape.top + shape.height),
+    )
+
+
+def regions_overlap(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
+    return a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]
+
+
+def region_has_room(slide, slide_height, left, top, width, height) -> bool:
+    candidate = (int(left), int(top), int(left + width), int(top + height))
+    for shape in slide.shapes:
+        text = shape_text(shape) if getattr(shape, "has_text_frame", False) else ""
+        if is_footer(shape, slide_height, text) or is_page_number(shape, text):
+            continue
+        if is_small_chip(shape, text):
+            continue
+        if not text and not getattr(shape, "has_table", False):
+            continue
+        if regions_overlap(candidate, shape_bounds(shape)):
+            return False
+    return True
+
+
+def available_visual_region(slide, slide_height, slide_width):
+    if slide_width >= Inches(12.0):
+        regions = (
+            (Inches(9.15), Inches(1.42), Inches(3.62), Inches(1.68)),
+            (Inches(9.15), Inches(3.34), Inches(3.62), Inches(1.68)),
+            (Inches(9.15), Inches(5.26), Inches(3.62), Inches(1.42)),
+        )
+    else:
+        regions = (
+            (Inches(6.25), Inches(4.35), Inches(3.2), Inches(1.45)),
+            (Inches(6.25), Inches(1.12), Inches(3.2), Inches(1.35)),
+            (Inches(6.25), Inches(5.95), Inches(3.2), Inches(1.0)),
+        )
+    for region in regions:
+        if region_has_room(slide, slide_height, *region):
+            return region
+    return None
+
+
+def has_visual_scaffold(slide) -> bool:
+    lowered = slide_text_blob(slide).lower()
+    return any(marker in lowered for marker in VISUAL_SCAFFOLD_MARKERS)
+
+
+def visual_scaffold_candidate(slide, context: NotebookContext) -> bool:
+    title = slide_title_text(slide).lower()
+    blob = slide_text_blob(slide).lower()
+    if any(marker in title for marker in VISUAL_SKIP_TITLE_TOKENS):
+        return False
+    if has_visual_scaffold(slide):
+        return False
+    if len(slide.shapes) > 34:
+        return False
+    if not context_supports_extensions(context):
+        return False
+    word_count = len(re.findall(r"[a-z0-9]+", blob))
+    return word_count >= 10
+
+
+def visual_scaffold_mode(slide, context: NotebookContext) -> str:
+    text = " ".join(
+        [
+            slide_title_text(slide),
+            slide_text_blob(slide),
+            context.lesson_focus,
+            " ".join(context.vocabulary),
+        ]
+    ).lower()
+    tokens = set(re.findall(r"[a-z0-9]+", text))
+    if (tokens & DATA_VISUAL_SIGNAL_TOKENS) or is_statistics_context(context):
+        return "data_snapshot"
+    if (tokens & SORTING_SIGNAL_TOKENS) or {"compare", "contrast", "example"} & tokens:
+        return "sort_sketch"
+    if {"model", "strategy", "equation", "solve", "represent", "representation"} & tokens:
+        return "represent_it"
+    return "evidence_path"
+
+
+def add_visual_panel_base(slide, left, top, width, height, title: str) -> None:
+    panel = add_rect(
+        slide,
+        left,
+        top,
+        width,
+        height,
+        RGBColor.from_string("FFFFFF"),
+        line_rgb=LIGHT_BORDER,
+        radius=True,
+    )
+    set_shape_text(panel, "", 1)
+    add_text(
+        slide,
+        left + Inches(0.16),
+        top + Inches(0.08),
+        width - Inches(0.32),
+        Inches(0.22),
+        title,
+        9.5,
+        bold=True,
+        color=NAVY,
+    )
+
+
+def add_data_snapshot_visual(slide, left, top, width, height) -> None:
+    add_visual_panel_base(slide, left, top, width, height, "Data Snapshot")
+    add_rect(
+        slide,
+        left + Inches(0.32),
+        top + height - Inches(0.38),
+        width - Inches(0.64),
+        Inches(0.025),
+        MID,
+        line_rgb=MID,
+    )
+    for idx, x_offset in enumerate((0.48, 0.88, 1.32, 1.88, 2.56)):
+        dot = slide.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.OVAL,
+            left + Inches(x_offset),
+            top + height - Inches(0.72 + (idx % 2) * 0.16),
+            Inches(0.16),
+            Inches(0.16),
+        )
+        dot.fill.solid()
+        dot.fill.fore_color.rgb = TEAL if idx % 2 else GOLD
+        dot.line.color.rgb = NAVY
+        dot.line.width = Pt(0.6)
+    add_text(
+        slide,
+        left + Inches(0.24),
+        top + Inches(0.44),
+        width - Inches(0.48),
+        Inches(0.24),
+        "pattern | spread | evidence",
+        8.8,
+        color=MID,
+        align=PP_ALIGN.CENTER,
+    )
+
+
+def add_sort_sketch_visual(slide, left, top, width, height) -> None:
+    add_visual_panel_base(slide, left, top, width, height, "Sort + Sketch")
+    col_w = (width - Inches(0.58)) // 2
+    left_box = add_rect(
+        slide,
+        left + Inches(0.18),
+        top + Inches(0.46),
+        col_w,
+        height - Inches(0.72),
+        PALE_BLUE,
+        line_rgb=LIGHT_BORDER,
+        radius=True,
+    )
+    right_box = add_rect(
+        slide,
+        left + Inches(0.4) + col_w,
+        top + Inches(0.46),
+        col_w,
+        height - Inches(0.72),
+        PALE_TEAL,
+        line_rgb=LIGHT_BORDER,
+        radius=True,
+    )
+    set_shape_text(left_box, "Example\nsketch", 8.8, bold=True, color=NAVY, align=PP_ALIGN.CENTER, vertical=MSO_ANCHOR.MIDDLE)
+    set_shape_text(right_box, "Non-example\nsketch", 8.8, bold=True, color=NAVY, align=PP_ALIGN.CENTER, vertical=MSO_ANCHOR.MIDDLE)
+
+
+def add_represent_it_visual(slide, left, top, width, height) -> None:
+    add_visual_panel_base(slide, left, top, width, height, "Represent It")
+    box_w = (width - Inches(0.72)) // 3
+    labels = ("words", "model", "symbol")
+    fills = (PALE_BLUE, PALE_TEAL, RGBColor.from_string("FFF5D7"))
+    for idx, label in enumerate(labels):
+        box_left = left + Inches(0.18) + idx * (box_w + Inches(0.18))
+        box = add_rect(
+            slide,
+            box_left,
+            top + Inches(0.52),
+            box_w,
+            height - Inches(0.82),
+            fills[idx],
+            line_rgb=LIGHT_BORDER,
+            radius=True,
+        )
+        set_shape_text(box, label, 8.8, bold=True, color=NAVY, align=PP_ALIGN.CENTER, vertical=MSO_ANCHOR.MIDDLE)
+
+
+def add_evidence_path_visual(slide, left, top, width, height) -> None:
+    add_visual_panel_base(slide, left, top, width, height, "Evidence Path")
+    labels = ("notice", "connect", "claim")
+    step_gap = (width - Inches(0.92)) // 3
+    y = top + Inches(0.72)
+    for idx, label in enumerate(labels):
+        x = left + Inches(0.28) + idx * step_gap
+        dot = slide.shapes.add_shape(MSO_AUTO_SHAPE_TYPE.OVAL, x, y, Inches(0.36), Inches(0.36))
+        dot.fill.solid()
+        dot.fill.fore_color.rgb = (TEAL, GOLD, NAVY)[idx]
+        dot.line.color.rgb = NAVY
+        dot.line.width = Pt(0.6)
+        set_shape_text(
+            dot,
+            str(idx + 1),
+            8.8,
+            bold=True,
+            color=RGBColor.from_string("FFFFFF"),
+            align=PP_ALIGN.CENTER,
+            vertical=MSO_ANCHOR.MIDDLE,
+            margin_left=0,
+            margin_right=0,
+            margin_top=0,
+            margin_bottom=0,
+        )
+        add_text(slide, x - Inches(0.12), y + Inches(0.43), Inches(0.62), Inches(0.2), label, 7.8, color=MID, align=PP_ALIGN.CENTER)
+        if idx < 2:
+            add_rect(
+                slide,
+                x + Inches(0.42),
+                y + Inches(0.17),
+                step_gap - Inches(0.48),
+                Inches(0.025),
+                LIGHT_BORDER,
+                line_rgb=LIGHT_BORDER,
+            )
+
+
+def add_visual_scaffold(slide, context: NotebookContext, slide_height, slide_width, stats: PolishStats) -> None:
+    if stats.visual_scaffolds >= 4:
+        return
+    if not visual_scaffold_candidate(slide, context):
+        return
+    region = available_visual_region(slide, slide_height, slide_width)
+    if region is None:
+        return
+    mode = visual_scaffold_mode(slide, context)
+    if mode == "data_snapshot":
+        add_data_snapshot_visual(slide, *region)
+    elif mode == "sort_sketch":
+        add_sort_sketch_visual(slide, *region)
+    elif mode == "represent_it":
+        add_represent_it_visual(slide, *region)
+    else:
+        add_evidence_path_visual(slide, *region)
+    stats.visual_scaffolds += 1
 
 
 def extract_question_prompts(text: str) -> list[str]:
@@ -1993,6 +2276,7 @@ def run_polish_pass(
         if prompt_candidates:
             add_prompt_card(slide, prompt_candidates[0][0], slide_title_text(slide) or prompt_candidates[0][1], stats)
         add_slide_publisher_polish(slide, slide_height, slide_width, stats)
+        add_visual_scaffold(slide, context, slide_height, slide_width, stats)
     applied_modes = add_extension_slides(prs, context, stats, requested_modes=requested_modes)
     prs.save(str(output_path))
     return context, stats, applied_modes, original_slide_count
@@ -2002,7 +2286,13 @@ def determine_quality_tier(context: NotebookContext, stats: PolishStats, applied
     signal_score = context_signal_score(context)
     quality_signals = {
         "lessonSignal": signal_score,
-        "styleRepairs": int(stats.heading_styles > 0) + int(stats.prompt_cards > 0) + int(stats.response_zones > 0) + int(stats.title_backplates > 0),
+        "styleRepairs": (
+            int(stats.heading_styles > 0)
+            + int(stats.prompt_cards > 0)
+            + int(stats.response_zones > 0)
+            + int(stats.title_backplates > 0)
+            + int(stats.visual_scaffolds > 0)
+        ),
         "extensionSlides": stats.added_slides,
         "distinctModes": len(applied_modes),
     }

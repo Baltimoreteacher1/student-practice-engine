@@ -41,6 +41,7 @@ SESSION_SECTION_KEYS = [
     "guided_practice_collaborative_learning",
     "independent_practice_application_stations",
     "closure_exit_ticket_assessment",
+    "small_group_instruction",
     "differentiation_sped_esol_supports_and_teacher_notes",
 ]
 
@@ -236,6 +237,7 @@ def build_session_plan(
             evidence_of_learning=build_closure_evidence(session_extract),
             misconceptions_to_monitor=infer_misconceptions(session_extract),
         ),
+        "small_group_instruction": build_small_group_instruction(session_extract),
         "differentiation_sped_esol_supports_and_teacher_notes": {
             "implementation_note": "Embed supports during the source-aligned lesson flow without changing the core task.",
             "sped": [],
@@ -700,3 +702,99 @@ def ensure_sentence(text: str) -> str:
     if cleaned.endswith((".", "!", "?")):
         return cleaned
     return f"{cleaned}."
+
+
+def build_small_group_instruction(session_extract: dict[str, Any]) -> dict[str, Any]:
+    source_group = select_small_group_source_group(session_extract)
+    focus_text = first_nonempty(
+        first_item(session_extract.get("focus_questions", [])),
+        first_item(session_extract.get("content_objectives", [])),
+        first_item(session_extract.get("learning_targets", [])),
+        source_group.get("representative_text", ""),
+    )
+    student_task = first_nonempty(
+        first_item(session_extract.get("guided_practice", [])),
+        first_item(session_extract.get("collaborative_tasks", [])),
+        first_item(session_extract.get("independent_practice", [])),
+        first_item(session_extract.get("apply_transfer_tasks", [])),
+        source_group.get("representative_text", ""),
+    )
+    return {
+        "small_group_focus": ensure_sentence(f"Use the small group to revisit {focus_text}"),
+        "who_to_pull": ensure_sentence(
+            "Students whose warm-up, guided-practice, or check-for-understanding responses show incomplete "
+            f"understanding of {focus_text}"
+        ),
+        "teacher_move": ensure_sentence(
+            "Model one source-aligned example, ask students to explain each step, and use prompts from "
+            f"{describe_source_group(source_group)}"
+        ),
+        "student_task": ensure_sentence(f"Complete or revise a matching task: {student_task}"),
+        "scaffold_support": ensure_sentence(
+            "Provide a sentence frame, annotated example, or visual cue while keeping the original problem demand intact"
+        ),
+        "rejoin_accountability": ensure_sentence(
+            "Students return to the whole-group task with one corrected response or explanation they can defend"
+        ),
+        "source_slide_numbers": list(source_group.get("slide_numbers", [])),
+        "source_excerpt": truncate(source_group.get("representative_text", "") or focus_text, 220),
+    }
+
+
+def select_small_group_source_group(session_extract: dict[str, Any]) -> dict[str, Any]:
+    for key in (
+        "guided_source",
+        "guided_practice_source",
+        "collaborative_source",
+        "independent_source",
+        "modeling_source",
+        "opening_source",
+        "closure_source",
+        "session_source",
+    ):
+        group = session_extract.get(key, {})
+        if isinstance(group, dict) and group.get("slide_numbers"):
+            return normalize_small_group_source_group(group)
+    slide_numbers = list(session_extract.get("source_slide_numbers", []))
+    representative_text = first_nonempty(
+        first_item(session_extract.get("guided_practice", [])),
+        first_item(session_extract.get("collaborative_tasks", [])),
+        first_item(session_extract.get("independent_practice", [])),
+        first_item(session_extract.get("learning_targets", [])),
+    )
+    return {"slide_numbers": slide_numbers, "representative_text": representative_text}
+
+
+def normalize_small_group_source_group(group: dict[str, Any]) -> dict[str, Any]:
+    representative_text = first_nonempty(
+        group.get("representative_text", ""),
+        group.get("source_excerpt", ""),
+        " ".join(str(line) for line in group.get("lines", [])),
+    )
+    return {
+        "slide_numbers": list(group.get("slide_numbers", [])),
+        "representative_text": representative_text,
+    }
+
+
+def first_nonempty(*values: str) -> str:
+    for value in values:
+        cleaned = clean_line(str(value))
+        if cleaned:
+            return cleaned
+    return "the source-aligned lesson task"
+
+
+def first_item(values: Iterable[str]) -> str:
+    for value in values:
+        cleaned = clean_line(str(value))
+        if cleaned:
+            return cleaned
+    return ""
+
+
+def describe_source_group(source_group: dict[str, Any]) -> str:
+    slide_numbers = source_group.get("slide_numbers", [])
+    if slide_numbers:
+        return "slide " + ", ".join(str(number) for number in slide_numbers[:3])
+    return "the lesson source"

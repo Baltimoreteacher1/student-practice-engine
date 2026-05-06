@@ -30,6 +30,7 @@ from detect_lesson_type import detect_lesson_type  # noqa: E402
 from extract_slides import extract_slide_deck  # noqa: E402
 from lesson_extract import run_lesson_extract  # noqa: E402
 from render_docx import ensure_template_docx, render_docx, render_markdown  # noqa: E402
+from render_html import render_html  # noqa: E402
 from utils import (  # noqa: E402
     LessonPlanError,
     ensure_directory,
@@ -107,6 +108,7 @@ def applyEnvironmentOverrides(config: dict[str, object]) -> dict[str, object]:
         config["extracted"]["source_fidelity_map"] = str(output_root / "extracted" / "source_fidelity_map.json")
         config["output"]["json"] = str(output_root / "lesson_plan.json")
         config["output"]["markdown"] = str(output_root / "lesson_plan.md")
+        config["output"]["html"] = str(output_root / "lesson_plan.html")
         config["output"]["docx"] = str(output_root / "lesson_plan.docx")
         config["output"]["validation_report"] = str(output_root / "validation_report.md")
     if teacher_name:
@@ -135,6 +137,7 @@ def main() -> int:
         fidelity_output_path = ROOT / extracted_config["source_fidelity_map"]
         lesson_json_path = ROOT / output_config["json"]
         lesson_md_path = ROOT / output_config["markdown"]
+        lesson_html_path = ROOT / output_config.get("html", str(Path(output_config["json"]).with_suffix(".html")))
         lesson_docx_path = ROOT / output_config["docx"]
         validation_report_path = ROOT / output_config["validation_report"]
         template_docx_path = ROOT / template_config["docx"]
@@ -195,11 +198,13 @@ def main() -> int:
             )
 
         render_markdown(lesson_plan, template_md_path, lesson_md_path, config)
+        render_html(lesson_plan, lesson_html_path, config)
         rendered_docx_paths = render_docx(lesson_plan, template_docx_path, lesson_docx_path, config)
 
         validation_payload["output_file_status"] = {
             "json": lesson_json_path.exists(),
             "markdown": lesson_md_path.exists(),
+            "html": lesson_html_path.exists(),
             "docx_count": len(rendered_docx_paths),
             "validation_report": True,
         }
@@ -211,6 +216,7 @@ def main() -> int:
         print(f"Source deck: {deck_path}")
         print(f"JSON output: {lesson_json_path}")
         print(f"Markdown output: {lesson_md_path}")
+        print(f"HTML output: {lesson_html_path}")
         for path in rendered_docx_paths:
             print(f"DOCX output: {path}")
         print(f"Validation report: {validation_report_path}")

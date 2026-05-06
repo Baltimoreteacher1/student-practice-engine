@@ -51,15 +51,15 @@ python3 notebook_folder_runner.py
 By default it uses these folders:
 
 ```text
-~/Documents/Chatgpt Notebook and Lesson plans/Notebook Inbox
-~/Documents/Chatgpt Notebook and Lesson plans/Notebook Output
-~/Documents/Chatgpt Notebook and Lesson plans/Notebook Archive
+~/Documents/Chatgpt/Notebook/Notebook Inbox
+~/Documents/Chatgpt/Notebook/Notebook Output
+~/Documents/Chatgpt/Notebook/Notebook Archive
 ```
 
 The first time you run the app or folder runner, it also drops a clickable macOS launcher into:
 
 ```text
-~/Documents/Chatgpt Notebook and Lesson plans/Notebook Inbox/Launch Notebook Inbox.command
+~/Documents/Chatgpt/Notebook/Notebook Inbox/Launch Notebook Inbox.command
 ```
 
 Drop one or more `.pptx` files into `Notebook Inbox`, then double-click that launcher or run the command manually. It will:
@@ -71,11 +71,7 @@ Drop one or more `.pptx` files into `Notebook Inbox`, then double-click that lau
 - write `Notebook Output/notebook_inbox_last_run.log`
 - write `Notebook Output/notebook_inbox_last_run.json`
 
-You can also double-click:
-
-```text
-process_notebook_inbox.command
-```
+Use `Launch Notebook Inbox.command` as the single notebook inbox command.
 
 Optional watch mode:
 

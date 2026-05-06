@@ -39,9 +39,9 @@ Use this file for the shortest reliable path through the workspace.
 
 - Human-facing daily launcher path:
   - `./Launch Notebook Inbox.command`
-  - default inbox: `~/Documents/Chatgpt Notebook and Lesson plans/Notebook Inbox`
-  - default output: `~/Documents/Chatgpt Notebook and Lesson plans/Notebook Output`
-  - default archive: `~/Documents/Chatgpt Notebook and Lesson plans/Notebook Archive`
+  - default inbox: `~/Documents/Chatgpt/Notebook/Notebook Inbox`
+  - default output: `~/Documents/Chatgpt/Notebook/Notebook Output`
+  - default archive: `~/Documents/Chatgpt/Notebook/Notebook Archive`
 - Repo-native path:
   - `notebook-engine/INBOX/`
   - `notebook-engine/OUTPUT/`

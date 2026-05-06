@@ -15,7 +15,27 @@ if str(SRC_DIR) not in sys.path:
 from apply_supports import apply_supports  # noqa: E402
 from build_lesson_plan import SESSION_SECTION_KEYS, build_lesson_objective, build_lesson_plan  # noqa: E402
 from lesson_extract import run_lesson_extract  # noqa: E402
+from render_docx import _render_session_markdown  # noqa: E402
 from validate_plan import build_validation_payload  # noqa: E402
+
+
+SMALL_GROUP_REQUIRED_FIELDS = (
+    "small_group_focus",
+    "who_to_pull",
+    "teacher_move",
+    "student_task",
+    "scaffold_support",
+    "rejoin_accountability",
+)
+
+SMALL_GROUP_LABELS = (
+    "Small Group Focus",
+    "Who to Pull",
+    "Teacher Move",
+    "Student Task",
+    "Scaffold/Support",
+    "Rejoin/Accountability",
+)
 
 
 def load_fixture() -> dict:
@@ -84,6 +104,89 @@ class StructureTests(unittest.TestCase):
         self.assertEqual(lesson_plan["sessions"][0]["output_filename"], "lesson_plan.docx")
         for key in SESSION_SECTION_KEYS:
             self.assertIn(key, lesson_plan["sessions"][0])
+
+    def test_small_group_instruction_is_required_and_populated(self) -> None:
+        raw_deck = load_fixture()
+        config = sample_config()
+        lesson_extract = run_lesson_extract(raw_deck, config)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            lesson_plan = build_lesson_plan(
+                lesson_extract=lesson_extract,
+                raw_deck=raw_deck,
+                lesson_type="direct_instruction",
+                config=config,
+                fidelity_output_path=tmp_path / "fidelity.json",
+                agenda_items=[],
+                run_date="2026-04-07",
+                requested_session_numbers=[],
+            )
+
+        session = lesson_plan["sessions"][0]
+        self.assertIn("small_group_instruction", SESSION_SECTION_KEYS)
+        self.assertIn("small_group_instruction", session)
+        section = session["small_group_instruction"]
+        for field in SMALL_GROUP_REQUIRED_FIELDS:
+            self.assertIn(field, section)
+            self.assertGreaterEqual(len(section[field].split()), 6)
+        self.assertTrue(section["source_slide_numbers"])
+        self.assertTrue(section["source_excerpt"])
+        self.assertNotIn("pull struggling students", json.dumps(section).lower())
+
+    def test_validation_fails_when_small_group_field_is_missing(self) -> None:
+        raw_deck = load_fixture()
+        config = sample_config()
+        lesson_extract = run_lesson_extract(raw_deck, config)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            lesson_plan = build_lesson_plan(
+                lesson_extract=lesson_extract,
+                raw_deck=raw_deck,
+                lesson_type="direct_instruction",
+                config=config,
+                fidelity_output_path=tmp_path / "fidelity.json",
+                agenda_items=[],
+                run_date="2026-04-07",
+                requested_session_numbers=[],
+            )
+        lesson_plan["sessions"][0]["small_group_instruction"].pop("teacher_move")
+        payload = build_validation_payload(
+            lesson_plan=lesson_plan,
+            raw_deck=raw_deck,
+            config=config,
+            output_file_status={
+                "json": True,
+                "markdown": False,
+                "docx_count": 0,
+                "validation_report": False
+            }
+        )
+        check = next(check for check in payload["checks"] if check["name"] == "small_group_instruction")
+        self.assertFalse(payload["passed"])
+        self.assertFalse(check["passed"])
+        self.assertIn("Teacher Move", check["details"])
+
+    def test_markdown_renders_dedicated_small_group_section(self) -> None:
+        raw_deck = load_fixture()
+        config = sample_config()
+        lesson_extract = run_lesson_extract(raw_deck, config)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            lesson_plan = build_lesson_plan(
+                lesson_extract=lesson_extract,
+                raw_deck=raw_deck,
+                lesson_type="direct_instruction",
+                config=config,
+                fidelity_output_path=tmp_path / "fidelity.json",
+                agenda_items=[],
+                run_date="2026-04-07",
+                requested_session_numbers=[],
+            )
+        markdown = "\n".join(_render_session_markdown(lesson_plan["sessions"][0], config))
+        self.assertIn("## Small Group Instruction", markdown)
+        for label in SMALL_GROUP_LABELS:
+            self.assertIn(f"**{label}:**", markdown)
+        self.assertLess(markdown.index("## Small Group Instruction"), markdown.index("## VOCABULARY"))
 
     def test_multisession_deck_defaults_to_both_sessions(self) -> None:
         raw_deck = multi_session_fixture()

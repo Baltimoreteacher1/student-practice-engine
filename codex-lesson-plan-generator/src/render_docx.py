@@ -7,8 +7,9 @@ from typing import Any, Iterable
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.oxml.ns import qn
-from docx.shared import Inches, Pt
+from docx.oxml import parse_xml
+from docx.oxml.ns import qn, nsdecls
+from docx.shared import Inches, Pt, RGBColor
 
 from apply_supports import student_requires_small_group
 from utils import clean_line, ensure_directory, select_preferred_learning_target, unique_preserve, write_text
@@ -135,6 +136,15 @@ PROCEDURE_ROW_ORDER = [
     ("exit_ticket", "Exit Ticket"),
 ]
 
+SMALL_GROUP_RENDER_FIELDS = [
+    ("Small Group Focus", "small_group_focus"),
+    ("Who to Pull", "who_to_pull"),
+    ("Teacher Move", "teacher_move"),
+    ("Student Task", "student_task"),
+    ("Scaffold/Support", "scaffold_support"),
+    ("Rejoin/Accountability", "rejoin_accountability"),
+]
+
 SUPPORT_PRIORITIES = {
     "warm_up": ["sentence starters", "word banks", "clarified/repeated directions", "visuals"],
     "launch": ["sentence starters", "word banks", "visuals", "graphic organizers"],
@@ -253,7 +263,7 @@ def render_docx(
         with urllib.request.urlopen(req, timeout=15) as resp:
             res = json.loads(resp.read().decode("utf-8"))
             if res.get("success") and res.get("url"):
-                print(f"[!!!] GOOGLE DOC: {res.get("url")}")
+                print(f"[!!!] GOOGLE DOC: {res.get('url')}")
                 subprocess.run(["open", res.get("url")])
     except Exception as e: print(f"[!] Cloud Connection Failed: {e}")
     # ----------------------------------------
@@ -317,6 +327,7 @@ def _render_session_markdown(session: dict[str, Any], config: dict[str, Any]) ->
             ],
         )
     )
+    lines.extend(_render_small_group_instruction_markdown(session))
     lines.extend(["", "## VOCABULARY", ""])
     lines.extend(
         _markdown_table(
@@ -346,6 +357,30 @@ def _render_session_markdown(session: dict[str, Any], config: dict[str, Any]) ->
     return lines
 
 
+def _render_small_group_instruction_markdown(session: dict[str, Any]) -> list[str]:
+    section = session.get("small_group_instruction", {})
+    if not isinstance(section, dict):
+        section = {}
+    lines = ["", "## Small Group Instruction", ""]
+    for label, key in SMALL_GROUP_RENDER_FIELDS:
+        value = clean_line(str(section.get(key, "")))
+        lines.append(f"**{label}:** {value}")
+    return lines
+
+
+def _render_small_group_instruction_doc(document: Document, session: dict[str, Any]) -> None:
+    section = session.get("small_group_instruction", {})
+    if not isinstance(section, dict):
+        section = {}
+    _add_heading(document, "Small Group Instruction")
+    for label, key in SMALL_GROUP_RENDER_FIELDS:
+        value = clean_line(str(section.get(key, "")))
+        paragraph = document.add_paragraph(style="Normal")
+        label_run = paragraph.add_run(f"{label}: ")
+        label_run.bold = True
+        paragraph.add_run(value)
+
+
 def _render_session_doc(document: Document, session: dict[str, Any], config: dict[str, Any]) -> None:
     view = _build_compact_session_view(session, config)
 
@@ -359,7 +394,7 @@ def _render_session_doc(document: Document, session: dict[str, Any], config: dic
         _add_paragraph(document, view["iep_students_line"])
 
     _add_heading(document, "DO NOW")
-    _add_paragraph(document, view["do_now"])
+    _add_content_box_paragraph(document, view["do_now"])
 
     _add_heading(document, "STANDARDS")
     standards_table = document.add_table(rows=2, cols=3)
@@ -367,12 +402,13 @@ def _render_session_doc(document: Document, session: dict[str, Any], config: dic
     _write_header_row(standards_table.rows[0].cells, view["standards_headers"])
     for index, text in enumerate(view["standards_cells"]):
         _write_cell_lines(standards_table.rows[1].cells[index], [text])
+    _apply_alternating_shading(standards_table)
 
     _add_heading(document, "OBJECTIVES")
-    _add_objective_line(document, "Content Objective:", view["content_objective"])
-    _add_paragraph(document, view["checkbox_line"])
-    _add_objective_line(document, "Language Objective:", view["language_objective"])
-    _add_paragraph(document, view["checkbox_line"])
+    _add_content_box_objective_line(document, "Content Objective:", view["content_objective"])
+    _add_content_box_paragraph(document, view["checkbox_line"])
+    _add_content_box_objective_line(document, "Language Objective:", view["language_objective"])
+    _add_content_box_paragraph(document, view["checkbox_line"])
 
     _add_heading(document, "LESSON PROCEDURES")
     procedures_table = document.add_table(rows=1, cols=6)
@@ -389,6 +425,9 @@ def _render_session_doc(document: Document, session: dict[str, Any], config: dic
         _write_cell_lines(cells[3], row["sped_supports"])
         _write_cell_lines(cells[4], row["wida_scaffolds"])
         _write_cell_lines(cells[5], row["formative_check"])
+    _apply_alternating_shading(procedures_table)
+
+    _render_small_group_instruction_doc(document, session)
 
     _add_heading(document, "VOCABULARY")
     vocab_table = document.add_table(rows=1, cols=7)
@@ -406,6 +445,7 @@ def _render_session_doc(document: Document, session: dict[str, Any], config: dic
         _write_cell_lines(cells[4], [row["morphology"]])
         _write_cell_lines(cells[5], [row["cognate"]])
         _write_cell_lines(cells[6], [row["cross_disciplinary"]])
+    _apply_alternating_shading(vocab_table)
 
     if view["accommodations_matrix_rows"]:
         _add_heading(document, "IEP ACCOMMODATIONS MATRIX")
@@ -416,6 +456,7 @@ def _render_session_doc(document: Document, session: dict[str, Any], config: dic
             cells = matrix_table.add_row().cells
             _write_cell_lines(cells[0], [row["student"]])
             _write_cell_lines(cells[1], [row["supports"]])
+        _apply_alternating_shading(matrix_table)
 
 
 def _build_compact_session_view(session: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
@@ -907,15 +948,26 @@ def _build_guided_teacher_moves(session: dict[str, Any]) -> list[str]:
     guided = session["guided_practice_collaborative_learning"]
     moves = list(modeling.get("teacher_actions", []))
     worked_examples = context.get("worked_examples", [])
+    
+    seen_prompts: set[str] = set()
+
     if worked_examples:
         prompt = clean_line(str(worked_examples[0].get("prompt", "")))
         reveal = clean_line(str(worked_examples[0].get("reveal", "")))
         if prompt:
             moves.append(f"Work through the model prompt: {prompt}")
+            seen_prompts.add(prompt.lower())
         if reveal and reveal.lower() != prompt.lower():
-            moves.append(f"Think aloud with the revealed relationship or example: {reveal}")
+            if reveal.lower() not in seen_prompts:
+                moves.append(f"Think aloud with the revealed relationship or example: {reveal}")
+                seen_prompts.add(reveal.lower())
     if context.get("guided_practice"):
-        moves.append(f"Release students to solve the next example: {truncate(context['guided_practice'][0], 140)}")
+        guided_prompt = clean_line(context['guided_practice'][0])
+        if guided_prompt.lower() not in seen_prompts:
+            moves.append(f"Release students to solve the next example: {truncate(guided_prompt, 140)}")
+            seen_prompts.add(guided_prompt.lower())
+        else:
+            moves.append("Release students to solve the next example.")
     if guided.get("teacher_actions") and clean_line(guided["teacher_actions"][-1]):
         moves.append(guided["teacher_actions"][-1])
     return moves
@@ -934,21 +986,32 @@ def _build_collaborative_teacher_moves(session: dict[str, Any]) -> list[str]:
     guided = session["guided_practice_collaborative_learning"]
     context = session.get("reference_render_context", {})
     moves = list(guided.get("teacher_actions", []))
+    
+    seen_prompts: set[str] = set()
+    
     collaborative_prompt = _optional_first_nonempty(context.get("collaborative_tasks", []))
     if collaborative_prompt:
         moves.append(f"Keep partner talk anchored to the discussion task: {truncate(collaborative_prompt, 140)}")
+        seen_prompts.add(collaborative_prompt.lower())
+        
     closing_check = _optional_first_nonempty(context.get("checks_for_understanding", []))
     if closing_check:
-        moves.append(f"Use the discussion check to close the task: {truncate(closing_check, 140)}")
+        if closing_check.lower() in seen_prompts:
+            moves.append("Use the discussion check to close the task.")
+        else:
+            moves.append(f"Use the discussion check to close the task: {truncate(closing_check, 140)}")
+            seen_prompts.add(closing_check.lower())
+            
     small_group_students = _small_group_students(session)
     if small_group_students:
         small_group_prompt = _small_group_task_prompt(session, "collaborative_practice")
-        moves.append(
-            "Pull "
-            + _natural_list(small_group_students)
-            + " for a brief small group on the same slide/book discussion: "
-            + truncate(small_group_prompt, 140)
-        )
+        group_list = _natural_list(small_group_students)
+        if small_group_prompt.lower() in seen_prompts:
+            moves.append(f"Pull {group_list} for a brief small group on the same slide/book discussion.")
+        else:
+            moves.append(f"Pull {group_list} for a brief small group on the same slide/book discussion: {truncate(small_group_prompt, 140)}")
+            seen_prompts.add(small_group_prompt.lower())
+            
     return moves
 
 
@@ -956,18 +1019,30 @@ def _build_collaborative_student_moves(session: dict[str, Any]) -> list[str]:
     guided = session["guided_practice_collaborative_learning"]
     context = session.get("reference_render_context", {})
     moves = list(guided.get("student_actions", []))
+    
+    seen_prompts: set[str] = set()
+    
     collaborative_prompt = _optional_first_nonempty(context.get("collaborative_tasks", []))
     if collaborative_prompt:
         moves.append(f"Discuss the collaborative prompt: {truncate(collaborative_prompt, 140)}")
+        seen_prompts.add(collaborative_prompt.lower())
+        
     closing_check = _optional_first_nonempty(context.get("checks_for_understanding", []))
     if closing_check:
-        moves.append(f"Record a response to the check-for-understanding prompt: {truncate(closing_check, 140)}")
+        if closing_check.lower() in seen_prompts:
+            moves.append("Record a response to the check-for-understanding prompt.")
+        else:
+            moves.append(f"Record a response to the check-for-understanding prompt: {truncate(closing_check, 140)}")
+            seen_prompts.add(closing_check.lower())
+            
     if _small_group_students(session):
         small_group_prompt = _small_group_task_prompt(session, "collaborative_practice")
-        moves.append(
-            "In the small group, rehearse the same slide/book discussion with frames and the visual: "
-            + truncate(small_group_prompt, 140)
-        )
+        if small_group_prompt.lower() in seen_prompts:
+            moves.append("In the small group, rehearse the same slide/book discussion with frames and the visual.")
+        else:
+            moves.append("In the small group, rehearse the same slide/book discussion with frames and the visual: " + truncate(small_group_prompt, 140))
+            seen_prompts.add(small_group_prompt.lower())
+            
     return moves
 
 
@@ -975,24 +1050,36 @@ def _build_independent_teacher_moves(session: dict[str, Any]) -> list[str]:
     independent = session["independent_practice_application_stations"]
     context = session.get("reference_render_context", {})
     moves = list(independent.get("teacher_actions", []))
+    
+    seen_prompts: set[str] = set()
+    
     independent_tasks = context.get("independent_practice", [])
     follow_through = clean_line(independent_tasks[1]) if len(independent_tasks) > 1 else ""
     if follow_through:
         moves.append(f"Require students to complete the follow-through direction: {truncate(follow_through, 140)}")
+        seen_prompts.add(follow_through.lower())
+        
     follow_up_task = _optional_first_nonempty(context.get("lets_explore_more_tasks", []))
     if follow_up_task:
-        moves.append(f"Use the follow-up task only if it appears in the slides: {truncate(follow_up_task, 140)}")
+        if follow_up_task.lower() in seen_prompts:
+            moves.append("Use the follow-up task only if it appears in the slides.")
+        else:
+            moves.append(f"Use the follow-up task only if it appears in the slides: {truncate(follow_up_task, 140)}")
+            seen_prompts.add(follow_up_task.lower())
+            
     if context.get("reveal_math_workbook_references"):
         moves.append("Use the Reveal Math Workspace or workbook task exactly as referenced in the lesson.")
+        
     small_group_students = _small_group_students(session)
     if small_group_students:
         small_group_prompt = _small_group_task_prompt(session, "independent_practice")
-        moves.append(
-            "Meet with "
-            + _natural_list(small_group_students)
-            + " in a brief small group to chunk the same slide/book task before releasing them back to independent work: "
-            + truncate(small_group_prompt, 140)
-        )
+        group_list = _natural_list(small_group_students)
+        if small_group_prompt.lower() in seen_prompts:
+            moves.append(f"Meet with {group_list} in a brief small group to chunk the same slide/book task before releasing them back to independent work.")
+        else:
+            moves.append(f"Meet with {group_list} in a brief small group to chunk the same slide/book task before releasing them back to independent work: " + truncate(small_group_prompt, 140))
+            seen_prompts.add(small_group_prompt.lower())
+            
     return moves
 
 
@@ -1000,19 +1087,31 @@ def _build_independent_student_moves(session: dict[str, Any]) -> list[str]:
     independent = session["independent_practice_application_stations"]
     context = session.get("reference_render_context", {})
     moves = list(independent.get("student_actions", []))
+    
+    seen_prompts: set[str] = set()
+    
     independent_tasks = context.get("independent_practice", [])
     prompt = _optional_first_nonempty(independent_tasks)
     if prompt:
         moves.append(f"Complete the independent prompt: {truncate(prompt, 140)}")
+        seen_prompts.add(prompt.lower())
+        
     follow_through = clean_line(independent_tasks[1]) if len(independent_tasks) > 1 else ""
     if follow_through:
-        moves.append(f"Follow the source direction exactly: {truncate(follow_through, 140)}")
+        if follow_through.lower() in seen_prompts:
+            moves.append("Follow the source direction exactly.")
+        else:
+            moves.append(f"Follow the source direction exactly: {truncate(follow_through, 140)}")
+            seen_prompts.add(follow_through.lower())
+            
     if _small_group_students(session):
         small_group_prompt = _small_group_task_prompt(session, "independent_practice")
-        moves.append(
-            "In the small group, solve the same slide/book task with chunked directions and highlighted quantities: "
-            + truncate(small_group_prompt, 140)
-        )
+        if small_group_prompt.lower() in seen_prompts:
+            moves.append("In the small group, solve the same slide/book task with chunked directions and highlighted quantities.")
+        else:
+            moves.append("In the small group, solve the same slide/book task with chunked directions and highlighted quantities: " + truncate(small_group_prompt, 140))
+            seen_prompts.add(small_group_prompt.lower())
+            
     return moves
 
 
@@ -1420,7 +1519,13 @@ def truncate(text: str, limit: int) -> str:
     cleaned = clean_line(text)
     if len(cleaned) <= limit:
         return cleaned
-    return cleaned[: limit - 1].rstrip() + "…"
+        
+    truncated = cleaned[: limit - 1]
+    last_space = truncated.rfind(' ')
+    if last_space > limit * 0.7:
+        truncated = truncated[:last_space]
+        
+    return truncated.rstrip(".,?!:") + "…"
 
 
 def _markdown_table(headers: list[str], rows: list[list[str]]) -> list[str]:
@@ -1446,8 +1551,8 @@ def _join_markdown_lines(lines: list[str]) -> str:
 
 
 def _apply_base_styles(document: Document, config: dict[str, Any]) -> None:
-    body_font = str((((config.get("docx_style") or {}).get("body_font")) or "Calibri"))
-    heading_font = str((((config.get("docx_style") or {}).get("heading_font")) or body_font))
+    body_font = "Inter"
+    heading_font = "Inter"
 
     normal_style = document.styles["Normal"]
     normal_style.font.name = body_font
@@ -1461,6 +1566,8 @@ def _apply_base_styles(document: Document, config: dict[str, Any]) -> None:
     heading_style._element.rPr.rFonts.set(qn("w:eastAsia"), heading_font)
     heading_style.font.size = Pt(12)
     heading_style.font.bold = True
+    heading_style.font.color.rgb = RGBColor(0x17, 0x32, 0x4D)  # Navy
+    heading_style.paragraph_format.space_before = Pt(16)
 
 
 def _add_heading(document: Document, text: str) -> None:
@@ -1480,12 +1587,27 @@ def _add_objective_line(document: Document, label: str, text: str) -> None:
     paragraph.add_run(clean_line(text))
 
 
+def _add_content_box_paragraph(document: Document, text: str) -> None:
+    paragraph = document.add_paragraph(style="Normal")
+    _set_paragraph_border_and_shading(paragraph, "1FA6A2", "F7F4EC")
+    paragraph.add_run(clean_line(text))
+
+
+def _add_content_box_objective_line(document: Document, label: str, text: str) -> None:
+    paragraph = document.add_paragraph(style="Normal")
+    _set_paragraph_border_and_shading(paragraph, "1FA6A2", "F7F4EC")
+    run = paragraph.add_run(label + " ")
+    run.bold = True
+    paragraph.add_run(clean_line(text))
+
+
 def _write_header_row(cells: list[Any], labels: list[str]) -> None:
     for index, label in enumerate(labels):
-        _write_cell_lines(cells[index], [label], bold=True)
+        _set_cell_background(cells[index], "17324D")
+        _write_cell_lines(cells[index], [label], bold=True, color=RGBColor(0xFF, 0xFF, 0xFF))
 
 
-def _write_cell_lines(cell: Any, lines: list[str], *, bold: bool = False) -> None:
+def _write_cell_lines(cell: Any, lines: list[str], *, bold: bool = False, color: Any = None) -> None:
     cell.text = ""
     usable = [clean_line(line) for line in lines if clean_line(line)]
     if not usable:
@@ -1495,6 +1617,8 @@ def _write_cell_lines(cell: Any, lines: list[str], *, bold: bool = False) -> Non
         paragraph.paragraph_format.space_after = Pt(0)
         run = paragraph.add_run(line)
         run.bold = bold
+        if color:
+            run.font.color.rgb = color
 
 
 def _write_bullet_cell(cell: Any, lines: list[str]) -> None:
@@ -1507,3 +1631,25 @@ def _write_bullet_cell(cell: Any, lines: list[str]) -> None:
         paragraph = cell.paragraphs[0] if index == 0 else cell.add_paragraph()
         paragraph.paragraph_format.space_after = Pt(0)
         paragraph.add_run(f"• {item}")
+
+
+def _apply_alternating_shading(table: Any) -> None:
+    for row_idx, row in enumerate(table.rows):
+        if row_idx > 0 and row_idx % 2 == 1:
+            for cell in row.cells:
+                _set_cell_background(cell, "F9FAFB")
+
+
+def _set_cell_background(cell: Any, color_hex: str) -> None:
+    tcPr = cell._tc.get_or_add_tcPr()
+    tcVAlign = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{color_hex}"/>')
+    tcPr.append(tcVAlign)
+
+
+def _set_paragraph_border_and_shading(paragraph: Any, border_color: str, fill_color: str) -> None:
+    pPr = paragraph._p.get_or_add_pPr()
+    pbdr = parse_xml(f'<w:pBdr {nsdecls("w")}><w:left w:val="single" w:sz="24" w:space="12" w:color="{border_color}"/></w:pBdr>')
+    pPr.append(pbdr)
+    shd = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{fill_color}"/>')
+    pPr.append(shd)
+

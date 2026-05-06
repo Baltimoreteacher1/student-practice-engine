@@ -21,6 +21,14 @@ PHASE_KEYS = [
     "closure_exit_ticket_assessment",
 ]
 FORBIDDEN_TOKENS = ("chatgpt", "ai-sounding", "placeholder", "tbd", "todo", "draft", "brainstorm")
+SMALL_GROUP_REQUIRED_FIELDS = (
+    ("small_group_focus", "Small Group Focus"),
+    ("who_to_pull", "Who to Pull"),
+    ("teacher_move", "Teacher Move"),
+    ("student_task", "Student Task"),
+    ("scaffold_support", "Scaffold/Support"),
+    ("rejoin_accountability", "Rejoin/Accountability"),
+)
 
 
 def build_validation_payload(
@@ -84,6 +92,15 @@ def build_validation_payload(
             "name": "teacher_ready_language",
             "passed": teacher_ready_ok,
             "details": teacher_ready_details,
+        }
+    )
+
+    small_group_ok, small_group_details = validate_small_group_instruction(lesson_plan)
+    checks.append(
+        {
+            "name": "small_group_instruction",
+            "passed": small_group_ok,
+            "details": small_group_details,
         }
     )
 
@@ -217,7 +234,7 @@ def validate_no_duplicate_sections(lesson_plan: dict[str, Any]) -> tuple[bool, s
             return False, "Section key list contains duplicates."
         if len(session.keys() & set(SESSION_SECTION_KEYS)) != len(SESSION_SECTION_KEYS):
             return False, f"{session['session_label']} is missing one or more unique section keys."
-    return True, "Each session contains the exact ten required section buckets without duplication."
+    return True, "Each session contains the required section buckets without duplication."
 
 
 def validate_teacher_facing_output(lesson_plan: dict[str, Any]) -> tuple[bool, str]:
@@ -227,6 +244,32 @@ def validate_teacher_facing_output(lesson_plan: dict[str, Any]) -> tuple[bool, s
         if token in blob:
             return False, f"Teacher-facing output contains forbidden token '{token}'."
     return True, "Teacher-facing output does not contain placeholders, AI/meta language, or draft framing."
+
+
+def validate_small_group_instruction(lesson_plan: dict[str, Any]) -> tuple[bool, str]:
+    issues: list[str] = []
+    for session in lesson_plan.get("sessions", []):
+        label = session.get("session_label", "Session")
+        section = session.get("small_group_instruction")
+        if not isinstance(section, dict):
+            issues.append(f"{label}: missing Small Group Instruction")
+            continue
+        for key, human_label in SMALL_GROUP_REQUIRED_FIELDS:
+            if not str(section.get(key, "")).strip():
+                issues.append(f"{label}: missing {human_label}")
+        slide_numbers = section.get("source_slide_numbers")
+        if not isinstance(slide_numbers, list) or not slide_numbers:
+            issues.append(f"{label}: missing source slide numbers")
+        if not str(section.get("source_excerpt", "")).strip():
+            issues.append(f"{label}: missing source excerpt")
+        if "pull struggling students" in serialize_payload_strings(section).lower():
+            issues.append(
+                f"{label}: replace generic phrase 'pull struggling students' "
+                "with source-specific criteria"
+            )
+    if issues:
+        return False, "; ".join(issues[:8])
+    return True, "Small group instruction includes required fields and source evidence."
 
 
 def validate_supports(lesson_plan: dict[str, Any]) -> tuple[bool, str]:

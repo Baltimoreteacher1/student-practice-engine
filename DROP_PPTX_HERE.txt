@@ -13,4 +13,4 @@ codex-lesson-plan-generator/config/generator_config.json
 
 Finished lesson plans are saved in:
 
-~/Documents/Chatgpt Notebook and Lesson plans/Lesson Plan Output
+~/Documents/Chatgpt/Lesson Plans/Lesson Plan Output

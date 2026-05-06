@@ -174,6 +174,7 @@ class NotebookEnhancementPptxPolishTests(unittest.TestCase):
             self.assertGreater(report["stats"]["responseZones"], 0)
             self.assertGreater(report["stats"]["titleBackplates"], 0)
             self.assertGreater(report["stats"]["promptCards"], 0)
+            self.assertGreater(report["stats"]["visualScaffolds"], 0)
             self.assertGreaterEqual(report["stats"]["addedSlides"], 4)
             self.assertEqual(report["qualityTier"], "enhanced")
             self.assertEqual(report["auditPasses"], 1)
@@ -185,6 +186,7 @@ class NotebookEnhancementPptxPolishTests(unittest.TestCase):
             self.assertTrue(any("Fix the Mistake" in text for text in all_slide_texts))
             self.assertTrue(any("Vocabulary in Action" in text for text in all_slide_texts))
             self.assertTrue(any("Representation Connection" in text for text in all_slide_texts))
+            self.assertTrue(any("Represent It" in text or "Evidence Path" in text for text in all_slide_texts))
 
     def test_process_enhancement_inbox_polishes_raw_pptx_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -216,6 +218,7 @@ class NotebookEnhancementPptxPolishTests(unittest.TestCase):
             self.assertTrue(output_path.exists())
             self.assertEqual(report["qualityTier"], "enhanced")
             self.assertEqual(report["stats"]["addedSlides"], 0)
+            self.assertEqual(report["stats"]["visualScaffolds"], 0)
             self.assertEqual(report["extensionModes"], [])
             self.assertTrue(report["warnings"])
 
@@ -234,10 +237,12 @@ class NotebookEnhancementPptxPolishTests(unittest.TestCase):
             self.assertNotIn("Student-Friendly Meaning", report["context"]["vocabulary"])
             self.assertIn("example_nonexample", report["extensionModes"])
             self.assertNotIn("representation_connection", report["extensionModes"])
+            self.assertGreater(report["stats"]["visualScaffolds"], 0)
             self.assertTrue(report["outputAudit"]["passed"])
             self.assertEqual(report["outputAudit"]["categories"]["layoutPressure"]["status"], "pass")
             self.assertLessEqual(report["outputAudit"]["deckMetrics"]["maxAddedSlideShapeCount"], 40)
             self.assertTrue(any("Example vs. Non-Example" in text for text in all_slide_texts))
+            self.assertTrue(any("Data Snapshot" in text for text in all_slide_texts))
 
     def test_process_enhancement_inbox_marks_review_needed_for_thin_pptx(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
