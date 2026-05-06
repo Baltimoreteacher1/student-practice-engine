@@ -10998,6 +10998,13 @@ def primary_source_problem_targets(plan_slide: dict[str, Any], *, limit: int = 2
     return unique_nonempty(targets, limit=limit)
 
 
+def rendered_source_problem_statement(plan_slide: dict[str, Any]) -> str:
+    targets = primary_source_problem_targets(plan_slide, limit=1)
+    if targets:
+        return targets[0]
+    return source_problem_statement(plan_slide)
+
+
 def shift_numeric_token(token: str, *, seed: int, index: int) -> str:
     raw_value = token.replace(",", "")
     try:
@@ -11227,9 +11234,13 @@ def prompt_stack_layout_mode(problems: list[str]) -> str:
 
 
 def problem_display_cards(plan_slide: dict[str, Any], *, variant: str = "practice") -> list[str]:
-    source_cards = problem_statement_candidates(plan_slide, limit=4)
+    source_cards = unique_nonempty(
+        primary_source_problem_targets(plan_slide, limit=2) + problem_statement_candidates(plan_slide, limit=4),
+        limit=4,
+    )
+    source_problem = source_cards[0] if source_cards else rendered_source_problem_statement(plan_slide)
     if variant == "guided":
-        cards = [f"Model This: {source_cards[0] if source_cards else source_problem_statement(plan_slide)}"]
+        cards = [f"Model This: {source_problem}"]
         partner_prompt = (
             source_cards[1]
             if len(source_cards) > 1 and is_solve_ready_problem_text(source_cards[1])
@@ -11238,7 +11249,7 @@ def problem_display_cards(plan_slide: dict[str, Any], *, variant: str = "practic
         cards.append(f"Your Turn: {partner_prompt}")
         return unique_nonempty(cards, limit=2)
     if variant == "exit":
-        cards = [f"Solve This: {source_cards[0] if source_cards else source_problem_statement(plan_slide)}"]
+        cards = [f"Solve This: {source_problem}"]
         cards.append(
             "Prove It: "
             + truncate_display_copy(
@@ -11249,10 +11260,12 @@ def problem_display_cards(plan_slide: dict[str, Any], *, variant: str = "practic
         return unique_nonempty(cards, limit=2)
     cards: list[str] = []
     full_source_prompts = [prompt for prompt in source_cards if is_solve_ready_problem_text(prompt)]
+    if source_problem and source_problem not in full_source_prompts:
+        full_source_prompts.insert(0, source_problem)
     for index, prompt in enumerate(full_source_prompts[:2], start=1):
         cards.append(f"P{index}: {prompt}")
     if not cards:
-        cards.append(f"P1: {source_problem_statement(plan_slide)}")
+        cards.append(f"P1: {source_problem}")
     if len(cards) == 1:
         cards.append(f"P2: {similar_problem_statement(plan_slide)}")
     long_prompt_stack = any(len(prompt) >= 150 for prompt in cards)
@@ -12115,13 +12128,16 @@ def problem_card_priority(text: str) -> int:
 
 def workbook_problem_prompts(plan_slide: dict[str, Any], *, limit: int = 3) -> list[str]:
     prompts: list[str] = []
-    ordered_source_prompts = problem_statement_candidates(plan_slide, limit=max(limit + 1, 4))
+    ordered_source_prompts = unique_nonempty(
+        primary_source_problem_targets(plan_slide, limit=2) + problem_statement_candidates(plan_slide, limit=max(limit + 1, 4)),
+        limit=max(limit + 1, 4),
+    )
     if ordered_source_prompts:
         prompts.append(f"Solve this source problem: {ordered_source_prompts[0]}")
         if len(ordered_source_prompts) > 1:
             prompts.append(f"Explain or solve this source follow-up: {ordered_source_prompts[1]}")
     else:
-        prompts.append(f"Solve this source problem: {source_problem_statement(plan_slide)}")
+        prompts.append(f"Solve this source problem: {rendered_source_problem_statement(plan_slide)}")
     if len(prompts) < 2:
         prompts.append(f"Solve a similar problem: {similar_problem_statement(plan_slide)}")
     prompts.append(f"Write and solve one more: {build_problem_creation_prompt(plan_slide)}")
@@ -12131,7 +12147,7 @@ def workbook_problem_prompts(plan_slide: dict[str, Any], *, limit: int = 3) -> l
 
 def problem_workbook_content(plan_slide: dict[str, Any], *, variant: str = "practice") -> dict[str, Any]:
     explain_prompt = plan_slide.get("response_prompt", "") or "Explain why your answer makes sense."
-    source_problem = source_problem_statement(plan_slide)
+    source_problem = rendered_source_problem_statement(plan_slide)
     second_source_problem = exact_source_followup_problem_statement(plan_slide, ordinal=1)
     similar_problem = similar_problem_statement(plan_slide)
     similar_phrase = similar_problem_focus_phrase(plan_slide)
@@ -15060,15 +15076,15 @@ def reference_exact_objective(plan_slide: dict[str, Any], deck: dict[str, Any]) 
 
 
 def reference_exact_problem_text(plan_slide: dict[str, Any], deck: dict[str, Any] | None = None, role: str = "") -> str:
-    if deck and role:
-        prompt = reference_exact_extract_prompt(deck, role)
-        if prompt:
-            return truncate_text(prompt, 190)
     source_problem = primary_source_problem_targets(plan_slide, limit=1)
     if source_problem:
         text = normalize_whitespace(source_problem[0])
         if text and not reference_exact_is_generic_text(text):
             return text
+    if deck and role:
+        prompt = reference_exact_extract_prompt(deck, role)
+        if prompt:
+            return truncate_text(prompt, 190)
     for key in ("primary_text", "context_hook", "directions", "secondary_text", "title"):
         text = normalize_whitespace(str(plan_slide.get(key, "")))
         if text and not reference_exact_is_generic_text(text):
@@ -16181,7 +16197,7 @@ def render_interactive_apply_slide(
             Inches(4.85),
             Inches(2.22),
             "Source Focus",
-            truncate_display_copy(source_problem_statement(plan_slide), 148),
+            truncate_display_copy(rendered_source_problem_statement(plan_slide), 148),
             fill=PALE_BLUE,
             accent=TEAL,
             title_size=15.0,
