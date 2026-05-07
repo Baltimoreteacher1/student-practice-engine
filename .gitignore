@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 *.py[cod]
 node_modules/
+dist/
 .next/
 notebook_engine_app_data/
 notebook-engine/ARCHIVE/

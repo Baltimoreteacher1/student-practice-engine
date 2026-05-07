@@ -1,78 +1,146 @@
-# Education Workflow Workspace
+# Grade 6 MCAP Math Practice App
 
-This workspace is now organized around a small set of canonical folders for repeated Codex work, while preserving the existing lesson-plan and notebook systems already in use.
+This is a simple React + Vite student practice app for Grade 6 MCAP-style math review.
 
-## Canonical folders
+Students can enter their name, choose a section, answer multiple-choice questions, get instant feedback, save progress in the browser, and view a final score report.
+
+No database, login system, or teacher dashboard is included yet. Progress is saved with `localStorage`, which means it stays on the same device and browser.
+
+## What Students Can Do
+
+- Type their name
+- Choose one of five math sections
+- Answer MCAP-style multiple-choice questions
+- See instant feedback after each answer
+- Return later on the same device and continue
+- View a final score report
+- Reset their progress
+
+## Important Files
+
+- `src/App.jsx` - controls the activity flow
+- `src/main.jsx` - starts the React app
+- `src/data/questionBanks.js` - main five-section question bank
+- `src/data/meanMedianMode.js` - example reusable topic bank
+- `src/components/ActivityShell.jsx` - student name screen, level map, and progress overview
+- `src/components/QuestionCard.jsx` - question, feedback, and next button
+- `src/components/ProgressBar.jsx` - simple progress display
+- `src/components/ScoreReport.jsx` - final score report
+- `src/utils/storage.js` - localStorage progress saving and reset
+- `src/utils/scoring.js` - score calculations
+- `src/styles/app.css` - visual design
+- `public/_redirects` - helps Cloudflare Pages handle refreshes
+
+## Run Locally
+
+1. Open Terminal in this project folder:
+
+   ```bash
+   cd /Users/joelneft/.codex/workspaces/default
+   ```
+
+2. Install the project:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the local app:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Open the URL that Vite shows. It is usually:
+
+   ```text
+   http://localhost:5173/
+   ```
+
+## Edit Questions
+
+Open this file:
 
 ```text
-.
-├─ lesson-plan-engine/
-├─ notebook-engine/
-├─ shared-assets/
-├─ quiz-form-builder/
-└─ validation-tools/
+src/data/questionBanks.js
 ```
 
-Use those folders for new durable specs, inbox/output/archive flows, examples, gold standards, logs, and migration notes.
+Each section contains a `questions` list. A question looks like this:
 
-For the current active work-area map and recommended day-to-day workflow, use [WORKSPACE_RUNBOOK.md](WORKSPACE_RUNBOOK.md).
+```js
+{
+  id: "ratios-1",
+  skill: "Equivalent ratios",
+  prompt: "Which ratio is equivalent to 3:5?",
+  choices: ["6:10", "9:10", "12:15", "15:20"],
+  answerIndex: 0,
+  explanation: "3:5 is equivalent to 6:10 because both terms are multiplied by 2.",
+}
+```
 
-For the shortest reliable operating path through lesson plans, notebooks, and enhancement, use [OPERATING_CHECKLIST.md](OPERATING_CHECKLIST.md).
+Teacher notes:
 
-For the shared execution and review contract used across this workspace, use [CODEX_OPERATING_PLAYBOOK.md](CODEX_OPERATING_PLAYBOOK.md).
+- Keep every `id` unique.
+- `choices` are the answer options students see.
+- `answerIndex` starts counting at 0.
+- Use `0` for choice A, `1` for choice B, `2` for choice C, and `3` for choice D.
+- `explanation` is shown after the student answers.
+- Keep the commas, brackets, and quotation marks in place.
 
-Default runtime decisions:
+## Swap Or Add Topic Banks
 
-- lesson plans: `codex-lesson-plan-generator/` remains the active implementation
-- notebooks: the preserved local root notebook runtime is the primary default path
-- hosted notebook flow: `flagship-notebook-generator/` is secondary and used when web/API behavior is the actual target
+`src/data/meanMedianMode.js` shows a reusable topic bank. It is imported into `src/data/questionBanks.js` and added to Statistics like this:
 
-## What each folder is for
+```js
+import { meanMedianModeQuestions } from "./meanMedianMode.js";
 
-- `lesson-plan-engine/`: canonical home for lesson-plan workflow specs, inbox/output/archive contracts, examples, and migration notes.
-- `notebook-engine/`: canonical home for student notebook workflow specs, operational folders, and migration notes.
-- `shared-assets/`: reusable templates, reference inputs, reference outputs, and shared gold standards.
-- `quiz-form-builder/`: Google Apps Script quiz/form builders and related examples.
-- `validation-tools/`: validation, extraction, QA, and audit tooling notes.
+// inside the Statistics questions list
+...meanMedianModeQuestions,
+```
 
-## Existing systems preserved in place
+To add a new topic later, make another file in `src/data`, export an array of questions, import it in `questionBanks.js`, and spread it into the section where you want it.
 
-The current working implementations were preserved to avoid breaking active paths:
+## Build for Production
 
-- `codex-lesson-plan-generator/`: existing lesson-plan generator repo
-- `flagship-notebook-generator/`: existing notebook web app and backend
-- root notebook engine files such as `notebook_engine.py`, `notebook_engine_app.py`, `notebook_folder_runner.py`
-- selected legacy smoke folders and sample outputs at workspace root
-- preserved local one-off scripts, scratch prompts, and preview renders in `shared-assets/archive/`
+Run:
 
-## How to use this workspace
+```bash
+npm run build
+```
 
-1. Start in the canonical folder for the workflow you are working on.
-2. Read that folder's `AGENTS.md`, `SPEC.md`, `TASKS.md`, and `README.md` when they exist.
-3. Reuse preserved implementations before creating new code.
-4. Put raw inputs in `INBOX/`, final outputs in `OUTPUT/`, completed source bundles in `ARCHIVE/`, and verification notes in `logs/`.
-5. Promote clean examples and approved final references into `examples/` and `gold-standards/`.
+This creates a production-ready folder named:
 
-## Active root entrypoints
+```text
+dist
+```
 
-Treat the workspace root as a thin runtime surface, not a general script dump. The normal root-level entrypoints are:
+## Preview the Production Build
 
-- `Generate Lesson Plan.command`
-- `Launch Notebook Inbox.command`
-- `launch_notebook_engine.command`
-- `notebook_engine.py`
-- `notebook_engine_app.py`
-- `notebook_folder_runner.py`
-- `notebook_launchers.py`
-- root `tests/`
+Run:
 
-Historical one-off helpers are preserved under `shared-assets/archive/` and should not be treated as active workflow tooling without cleanup.
+```bash
+npm run preview
+```
 
-## Validation shortcuts
+## Deploy to Cloudflare Pages
 
-- lesson plans: `python3 validation-tools/src/verify_lesson_plan_engine.py`
-- notebooks: `python3 validation-tools/src/verify_notebook_engine.py`
+1. Put this project in a GitHub repository.
+2. In Cloudflare, go to Workers & Pages.
+3. Create a new Pages project.
+4. Connect your GitHub repository.
+5. Use these settings:
 
-## Practical rule
+   ```text
+   Framework preset: Vite
+   Build command: npm run build
+   Output directory: dist
+   Root directory: leave blank unless this app is inside a subfolder
+   ```
 
-If a change is exploratory or legacy-specific, preserve first and document the next migration step. If a change is durable, place it in the canonical structure so future Codex runs can find it quickly.
+6. Deploy.
+
+No environment variables are needed.
+
+## Reset Saved Student Progress
+
+Use the in-app `Reset` or `Reset Practice` button. For testing, you can also clear this site's browser data.
