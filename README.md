@@ -1,146 +1,107 @@
-# Grade 6 MCAP Math Practice App
+# Student Practice Engine
 
-This is a simple React + Vite student practice app for Grade 6 MCAP-style math review.
+## 1. What This Project Is
+This is a React + Vite classroom activity hub for student practice pages. It is designed for one reusable Cloudflare Pages site where each unit and activity gets a clean student link.
 
-Students can enter their name, choose a section, answer multiple-choice questions, get instant feedback, save progress in the browser, and view a final score report.
-
-No database, login system, or teacher dashboard is included yet. Progress is saved with `localStorage`, which means it stays on the same device and browser.
-
-## What Students Can Do
-
-- Type their name
-- Choose one of five math sections
-- Answer MCAP-style multiple-choice questions
-- See instant feedback after each answer
-- Return later on the same device and continue
-- View a final score report
-- Reset their progress
-
-## Important Files
-
-- `src/App.jsx` - controls the activity flow
-- `src/main.jsx` - starts the React app
-- `src/data/questionBanks.js` - main five-section question bank
-- `src/data/meanMedianMode.js` - example reusable topic bank
-- `src/components/ActivityShell.jsx` - student name screen, level map, and progress overview
-- `src/components/QuestionCard.jsx` - question, feedback, and next button
-- `src/components/ProgressBar.jsx` - simple progress display
-- `src/components/ScoreReport.jsx` - final score report
-- `src/utils/storage.js` - localStorage progress saving and reset
-- `src/utils/scoring.js` - score calculations
-- `src/styles/app.css` - visual design
-- `public/_redirects` - helps Cloudflare Pages handle refreshes
-
-## Run Locally
-
-1. Open Terminal in this project folder:
-
-   ```bash
-   cd /Users/joelneft/.codex/workspaces/default
-   ```
-
-2. Install the project:
-
-   ```bash
-   npm install
-   ```
-
-3. Start the local app:
-
-   ```bash
-   npm run dev
-   ```
-
-4. Open the URL that Vite shows. It is usually:
-
-   ```text
-   http://localhost:5173/
-   ```
-
-## Edit Questions
-
-Open this file:
-
-```text
-src/data/questionBanks.js
+## 2. How To Run Locally
+```bash
+cd /Users/joelneft/Documents/student-practice-engine
+npm install
+npm run dev
 ```
 
-Each section contains a `questions` list. A question looks like this:
+Open the local Vite URL shown in Terminal.
 
-```js
-{
-  id: "ratios-1",
-  skill: "Equivalent ratios",
-  prompt: "Which ratio is equivalent to 3:5?",
-  choices: ["6:10", "9:10", "12:15", "15:20"],
-  answerIndex: 0,
-  explanation: "3:5 is equivalent to 6:10 because both terms are multiplied by 2.",
-}
-```
+## 3. How To Add A New Activity
+1. Add a new question-bank file in `src/data/activities/`.
+2. Export it from `src/data/activities/index.js`.
+3. Add a matching catalog entry in `src/data/activityCatalog.js`.
+4. Use a simple slug, such as `ratios-review`, for the student URL.
 
-Teacher notes:
+Each catalog item needs:
+- `slug`
+- `title`
+- `unit`
+- `unitSlug`
+- `grade`
+- `activityType`
+- `estimatedMinutes`
+- `description`
+- `standardsOrSkills`
+- `questionBankId`
+- `status`
 
-- Keep every `id` unique.
-- `choices` are the answer options students see.
-- `answerIndex` starts counting at 0.
-- Use `0` for choice A, `1` for choice B, `2` for choice C, and `3` for choice D.
-- `explanation` is shown after the student answers.
-- Keep the commas, brackets, and quotation marks in place.
+## 4. How To Edit Questions
+Edit the activity question bank in `src/data/activities/`.
 
-## Swap Or Add Topic Banks
+Questions currently support:
+- `multipleChoice`
+- `shortAnswer`
 
-`src/data/meanMedianMode.js` shows a reusable topic bank. It is imported into `src/data/questionBanks.js` and added to Statistics like this:
+Keep each question teacher-readable:
+- `id`
+- `type`
+- `prompt`
+- `choices` for multiple choice
+- `correctAnswer`
+- `explanation`
+- `skill`
+- `points`
 
-```js
-import { meanMedianModeQuestions } from "./meanMedianMode.js";
-
-// inside the Statistics questions list
-...meanMedianModeQuestions,
-```
-
-To add a new topic later, make another file in `src/data`, export an array of questions, import it in `questionBanks.js`, and spread it into the section where you want it.
-
-## Build for Production
-
+## 5. How To Test Before Deploying
 Run:
-
 ```bash
 npm run build
 ```
 
-This creates a production-ready folder named:
-
-```text
-dist
-```
-
-## Preview the Production Build
-
-Run:
-
+Optional local preview:
 ```bash
 npm run preview
 ```
 
-## Deploy to Cloudflare Pages
+## 6. How To Deploy To Cloudflare Pages
+Use GitHub-connected Cloudflare Pages. After changes are committed and pushed to `main`, Cloudflare Pages should rebuild automatically.
 
-1. Put this project in a GitHub repository.
-2. In Cloudflare, go to Workers & Pages.
-3. Create a new Pages project.
-4. Connect your GitHub repository.
-5. Use these settings:
+Common command flow:
+```bash
+cd /Users/joelneft/Documents/student-practice-engine
+npm install
+npm run dev
+npm run build
+git add .
+git commit -m "Update student practice engine"
+git push
+```
 
-   ```text
-   Framework preset: Vite
-   Build command: npm run build
-   Output directory: dist
-   Root directory: leave blank unless this app is inside a subfolder
-   ```
+## 7. Cloudflare Settings
+Cloudflare reminder:
+- Framework preset: Vite
+- Build command: npm run build
+- Build output directory: dist
+- Root directory: blank/default or /
+- Production branch: main
 
-6. Deploy.
+Do not use VitePress. Do not use `npx wrangler deploy`. Do not add a Worker setup for this app.
 
-No environment variables are needed.
+## 8. Student Link Pattern
+Examples:
+- `/`
+- `/units/statistics`
+- `/units/expressions`
+- `/activities/mean-median-mode-review`
+- `/activities/exponents-warmup`
+- `/activities/geometry-area-review`
 
-## Reset Saved Student Progress
+Direct links are supported by `public/_redirects`:
+```txt
+/* /index.html 200
+```
 
-Use the in-app `Reset` or `Reset Practice` button. For testing, you can also clear this site's browser data.
+## 9. Common Troubleshooting
+If a direct activity link shows a Cloudflare 404, check that `public/_redirects` exists and was included in the latest build.
+
+If an activity card appears but the activity page is not found, check that `questionBankId` in `src/data/activityCatalog.js` matches the key exported from `src/data/activities/index.js`.
+
+If student progress seems mixed between activities, check that storage keys include the activity slug in `src/utils/storage.js`.
+
+If deployment does not update, confirm the latest commit was pushed to `main` and Cloudflare Pages is connected to this repository.

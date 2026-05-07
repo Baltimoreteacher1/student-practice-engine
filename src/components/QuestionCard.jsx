@@ -1,69 +1,69 @@
-import ProgressBar from "./ProgressBar.jsx";
-
-function QuestionCard({ answer, level, onAnswer, onBack, onNext, question, questionNumber, totalQuestions }) {
+function QuestionCard({ answer, onAnswer, question }) {
   const hasAnswered = Boolean(answer);
-  const answeredInLevel = questionNumber - 1 + (hasAnswered ? 1 : 0);
-  const isLastQuestion = questionNumber === totalQuestions;
+  const currentValue = answer?.studentAnswer ?? "";
+
+  function handleShortAnswerSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    onAnswer(question, formData.get("shortAnswer"));
+  }
 
   return (
-    <main className="question-shell">
-      <header className="question-top">
-        <button className="ghost-button" onClick={onBack} type="button">
-          Level Map
-        </button>
-        <p>
-          Question {questionNumber} of {totalQuestions}
-        </p>
-      </header>
+    <article className="question-card">
+      <div className="question-header">
+        <span>{question.skill}</span>
+        <strong>
+          {question.points} point{question.points === 1 ? "" : "s"}
+        </strong>
+      </div>
+      <h3>{question.prompt}</h3>
 
-      <ProgressBar current={answeredInLevel} label={level.title} total={totalQuestions} />
-
-      <section className={`question-card ${level.color}`}>
-        <p className="eyebrow">{level.title}</p>
-        <h1>{question.prompt}</h1>
-        <p className="skill-tag">{question.skill}</p>
-
+      {question.type === "multipleChoice" ? (
         <div className="choice-list">
-          {question.choices.map((choice, index) => {
-            const isSelected = answer?.selectedIndex === index;
-            const isCorrectChoice = question.answerIndex === index;
+          {question.choices.map((choice) => {
+            const isSelected = currentValue === choice;
+            const isCorrect = hasAnswered && choice === question.correctAnswer;
+            const isIncorrect = hasAnswered && isSelected && !isCorrect;
             let className = "choice-button";
-
-            if (hasAnswered && isCorrectChoice) className += " correct";
-            if (hasAnswered && isSelected && !isCorrectChoice) className += " incorrect";
+            if (isCorrect) className += " correct";
+            if (isIncorrect) className += " incorrect";
 
             return (
               <button
                 className={className}
                 disabled={hasAnswered}
                 key={choice}
-                onClick={() => onAnswer(question, index)}
+                onClick={() => onAnswer(question, choice)}
                 type="button"
               >
-                <span>{String.fromCharCode(65 + index)}</span>
                 {choice}
               </button>
             );
           })}
         </div>
-
-        {hasAnswered && (
-          <div className={answer.isCorrect ? "feedback correct" : "feedback incorrect"} role="status">
-            <strong>{answer.isCorrect ? "Correct" : "Try this idea"}</strong>
-            <p>{question.explanation}</p>
-          </div>
-        )}
-
-        <div className="question-actions">
-          <button className="ghost-button" onClick={onBack} type="button">
-            Pause
+      ) : (
+        <form className="short-answer-form" onSubmit={handleShortAnswerSubmit}>
+          <input
+            aria-label="Short answer"
+            defaultValue={currentValue}
+            disabled={hasAnswered}
+            name="shortAnswer"
+            placeholder="Type your answer"
+            type="text"
+          />
+          <button className="button" disabled={hasAnswered} type="submit">
+            Check
           </button>
-          <button disabled={!hasAnswered} onClick={onNext} type="button">
-            {isLastQuestion ? "Finish Level" : "Next"}
-          </button>
+        </form>
+      )}
+
+      {hasAnswered && (
+        <div className={answer.isCorrect ? "feedback correct" : "feedback incorrect"} role="status">
+          <strong>{answer.isCorrect ? "Correct" : "Review this"}</strong>
+          <p>{question.explanation}</p>
         </div>
-      </section>
-    </main>
+      )}
+    </article>
   );
 }
 

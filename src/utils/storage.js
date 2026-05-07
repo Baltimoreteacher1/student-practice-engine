@@ -1,38 +1,33 @@
-export const STORAGE_KEY = "mcap-grade-6-practice-progress";
-
 export const emptyProgress = {
   studentName: "",
-  currentLevelId: "",
-  currentQuestionIndex: 0,
   answers: {},
-  showResults: false,
+  showReport: false,
 };
 
-export function loadProgress() {
+export function getProgressKey(activitySlug) {
+  return `studentPracticeEngine:${activitySlug}:progress`;
+}
+
+export function loadProgress(activitySlug) {
   try {
-    const savedProgress = localStorage.getItem(STORAGE_KEY);
+    const savedProgress = localStorage.getItem(getProgressKey(activitySlug));
     return savedProgress ? { ...emptyProgress, ...JSON.parse(savedProgress) } : { ...emptyProgress };
   } catch {
     return { ...emptyProgress };
   }
 }
 
-export function saveProgress(progress) {
+export function saveProgress(activitySlug, progress) {
   try {
-    if (!progress.studentName) {
-      localStorage.removeItem(STORAGE_KEY);
-      return;
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    localStorage.setItem(getProgressKey(activitySlug), JSON.stringify(progress));
   } catch {
-    // The app still works for the current session if browser storage is blocked.
+    // The activity still works for the current session if browser storage is blocked.
   }
 }
 
-export function clearProgress() {
+export function clearProgress(activitySlug) {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(getProgressKey(activitySlug));
   } catch {
     // Nothing else is needed if browser storage is blocked.
   }
